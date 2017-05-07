@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Simple google drive client",
   "main": "main.js",
-  "repository": "git@github.com:coyotte508/odrive",
+  "repository": "git@github.com:liberodark/ODrive.git",
   "author": "coyotte508 <coyotte508@gmail.com>",
   "license": "GPL-3.0",
   "dependencies": {
@@ -34,6 +34,7 @@
   "scripts": {
     "lint": "eslint app main.js",
     "build": "webpack --config webpack.config.js",
-    "test": "npm run lint"
+    "test": "npm run lint",
+    "start": "electron main"
   }
 }

@@ -1,20 +1,24 @@
+const gbs = require('./config/globals');
 const {app, BrowserWindow} = require('electron');
 const url = require('url');
 
 //Actual backend
 const backend = require('./app/backend');
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win;
-
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({width: 600, height: 250, webPreferences: {nodeIntegration: false}});
+  gbs.win = new BrowserWindow({
+    width: 600, 
+    height: 250, 
+    webPreferences: {
+      nodeIntegration: false
+    },
+    'use-content-size': true
+  });
 
 
   // and load the index.html of the app.
-  win.loadURL(url.format({
+  gbs.win.loadURL(url.format({
     pathname: "odrive.io:" + backend.port +"/",
     protocol: 'http:',
     slashes: true
@@ -24,11 +28,11 @@ function createWindow () {
   //win.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  win.on('closed', () => {
+  gbs.win.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    win = null;
+    gbs.win = null;
   });
 }
 
@@ -51,7 +55,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (win === null) {
+  if (gbs.win === null) {
     createWindow();
   }
 });

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <title>ODrive - Settings</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="favicon.png" id="favicon">
+  <script src="/javascript/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/styles.css">
+</head>
+<body class="settings">
+
+<section>
+  <h4>Account</h4>
+  <p><a href="/connect">Connect</a> a google drive account to get started! <a class="btn btn-sm btn-info float-sm-right" href="/connect"><i class="fa fa-arrow-right"></i></a></p>
+</section>
+
+<hr/>
+
+<section>
+  <h4>Folder location</h4>
+  <p>Choose where on your computer you will store your google drive folder</p>
+
+  <div>
+    <label class="custom-file">
+      <input type="file" id="file" class="custom-file-input" directory>
+      <span class="custom-file-control"></span>
+    </label>
+  </div>
+</section>
+
+<hr/>
+
+<section>
+  <div class="text-sm-right">
+    <a class="btn btn-primary" href="/begin">Synchronize !</a>
+  </div>
+</section>
+
+
+</body>

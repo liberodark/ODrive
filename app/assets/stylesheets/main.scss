@@ -1,3 +1,16 @@
 @import "~bootstrap/scss/bootstrap.scss";
 @import "~font-awesome/scss/font-awesome";
 
+.initial {
+  padding-top: 25px;
+  padding-right: 20px;
+  padding-left: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  p {
+    text-align: justify;
+  }
+}

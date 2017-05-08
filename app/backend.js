@@ -1,10 +1,10 @@
+const path = require("path");
 /* Express stuff */
 const express = require('express');
 const bodyParser = require('body-parser');
 
 /* Local stuff */
 const router = require('./routes/index');
-
 
 var app = express();
 
@@ -19,8 +19,10 @@ for (let middleware of require("./core/middlewares")) {
   app.use(middleware);
 }
 
-app.use("/", express.static(__dirname + '../public'));
+app.use("/", express.static(path.join(__dirname, "..", 'public')));
 app.use("/", router);
+
+console.log(path.join(__dirname, "..", 'public'));
 
 async function listen() {
   try {

@@ -28,6 +28,11 @@ async function getAccounts() {
   return accounts;
 }
 
+function addAccount(account) {
+  accounts.push(account);
+}
+
 module.exports = {
-  accounts: getAccounts
+  accounts: getAccounts,
+  addAccount
 };

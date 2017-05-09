@@ -34,7 +34,7 @@ In the project directory:
 
 ```bash
 npm install
-npm build
+webpack
 ```
 
 ## Run

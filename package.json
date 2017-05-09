@@ -33,7 +33,6 @@
   },
   "scripts": {
     "lint": "eslint app main.js",
-    "build": "webpack --config webpack.config.js",
     "test": "npm run lint",
     "start": "electron main"
   }

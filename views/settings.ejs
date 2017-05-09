@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html lang="en">
 <head>
   <title>ODrive - Settings</title>
   <meta charset="utf-8">
@@ -12,7 +12,20 @@
 
 <section>
   <h4>Account</h4>
-  <p><a href="/connect">Connect</a> a google drive account to get started! <a class="btn btn-sm btn-info float-sm-right" href="/connect"><i class="fa fa-arrow-right"></i></a></p>
+  <%
+  if (accounts.length == 0) { %>
+    <p><a href="/connect">Connect</a> a google drive account to get started! <a class="btn btn-sm btn-info float-sm-right" href="/connect"><i class="fa fa-arrow-right"></i></a></p>
+  <% } else { %>
+    <ul class="list-group">
+    <% for (let account of accounts) {%>
+      <li class="list-group-item"><%= account.email %></li>
+    <%
+    } %>
+    </ul>
+    <p><a href="/connect">Add</a> another google drive account! <a class="btn btn-sm btn-info float-sm-right" href="/connect"><i class="fa fa-plus"></i></a></p>
+    <%
+  }
+  %>
 </section>
 
 <hr/>
@@ -24,7 +37,7 @@
   <div>
     <label class="custom-file">
       <input type="file" id="file" class="custom-file-input" directory>
-      <span class="custom-file-control"></span>
+      <span class="custom-file-control folder"></span>
     </label>
   </div>
 </section>

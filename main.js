@@ -8,8 +8,8 @@ const backend = require('./app/backend');
 function createWindow () {
   // Create the browser window.
   gbs.win = new BrowserWindow({
-    width: 600, 
-    height: 250, 
+    width: 600,
+    height: 250,
     webPreferences: {
       nodeIntegration: false
     },
@@ -19,7 +19,7 @@ function createWindow () {
 
   // and load the index.html of the app.
   gbs.win.loadURL(url.format({
-    pathname: "odrive.io:" + backend.port +"/",
+    pathname: "odrive.io/",
     protocol: 'http:',
     slashes: true
   }));
@@ -36,7 +36,7 @@ function createWindow () {
   });
 }
 
-app.commandLine.appendSwitch('host-rules', 'MAP odrive.io 127.0.0.1');
+app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -48,7 +48,7 @@ app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   // if (process.platform !== 'darwin') {
-     app.quit()
+     app.quit();
   // }
 });
 

@@ -10,12 +10,12 @@ var app = express();
 
 const port = process.env.port || 16409;
 
-app.set('view engine', 'ejs'); 
+app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-for (let middleware of require("./core/middlewares")) {
+for (let middleware of require("./modules/middlewares")) {
   app.use(middleware);
 }
 
@@ -30,7 +30,7 @@ async function listen() {
       app.listen(port, 'localhost', () => {resolve();});
     });
 
-    await promise; 
+    await promise;
 
     console.log("app started on port", port);
   } catch(err) {
@@ -39,6 +39,12 @@ async function listen() {
 }
 
 listen();
+
+/* Handle error */
+process.on('unhandledRejection', error => {
+  // Will print "unhandledRejection err is not defined"
+  console.error(error);
+});
 
 module.exports = {
   port

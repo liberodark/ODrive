@@ -12,7 +12,9 @@ router.get('/settings', async (req, res) => {
 
 router.get('/connect', (req, res) => {
   let account = new Account();
-  res.redirect(account.authUrl);
+  let url = account.authUrl;
+  console.log(url);
+  res.redirect(url);
 });
 
 router.get('/add', (req, res) => {

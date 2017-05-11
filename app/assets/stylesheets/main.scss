@@ -1,6 +1,7 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~font-awesome/scss/font-awesome";
 
+@import "helpers";
 @import "components";
 
 body {
@@ -23,5 +24,10 @@ body {
 .settings {
   label {
     font-size: 16px;
+  }
+
+  .row {
+    margin-right: 0;
+    margin-left: 0;
   }
 }

@@ -8,7 +8,7 @@ const router = require('./routes/index');
 
 var app = express();
 
-const port = process.env.port || 16409;
+const port = require('../config/globals').port;
 
 app.set('view engine', 'ejs');
 

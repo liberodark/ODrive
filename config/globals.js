@@ -1,6 +1,7 @@
 module.exports = {
   win: null,
   db: null,
-  api: "985525764653-4m6ti2ku9kh37n89ohpt5s644b973pq6.apps.googleusercontent.com",
-  secret: "uKGtUQYI3OuQCCiTAhl65LfJ"
+  api: "985525764653-m9dr93l4sme1ggp89fl28fopjas3equc.apps.googleusercontent.com",
+  secret: "did-JgyKIPUtVU2J5Hi2a2ES",
+  port: process.env.port || 16409
 };

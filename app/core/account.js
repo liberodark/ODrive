@@ -13,7 +13,12 @@ class Account {
       this.load(doc);
     }
     this.folder = this.folder || path.join(os.homedir(), "Google Drive");
-    this.oauth = new OAuth2(globals.api, globals.secret, "http://odrive.io/authCallback");
+    this.oauth = new OAuth2(
+      globals.api,
+      globals.secret,
+      `http://127.0.0.1:${globals.port}/authCallback`
+      //"http://odrive.io/authCallback"
+    );
     if (this.tokens) {
       this.onTokensReceived(this.tokens);
     }

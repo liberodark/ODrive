@@ -36,13 +36,13 @@ module.exports = {
           fallback: "style-loader"
         })
       },
-      { 
-        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-        use: "file-loader?publicPath=../&name=./files/[hash].[ext]" 
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: "file-loader?publicPath=../&name=./files/[hash].[ext]"
       },
-      { 
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-        use: "url-loader?publicPath=../&name=./files/[hash].[ext]&limit=10000&mimetype=application/font-woff" 
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: "url-loader?publicPath=../&name=./files/[hash].[ext]&limit=10000&mimetype=application/font-woff"
       },
       {
         test: /\.png$/,
@@ -59,8 +59,12 @@ module.exports = {
       context: __dirname,
       from: "node_modules/tether/dist/js/tether.min.js",
       to: "javascript"
+    }, {
+      from: "javascript/preload.js", to: "javascript"
+    }, {
+      from: "javascript/settings.js", to: "javascript"
     }]),
-    new webpack.ProvidePlugin({ 
+    new webpack.ProvidePlugin({
       $: 'jquery', jquery: 'jquery', jQuery: 'jquery' ,
       "window.Tether": 'tether'
     }),

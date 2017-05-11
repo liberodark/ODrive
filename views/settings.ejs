@@ -5,10 +5,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="favicon.png" id="favicon">
+  <script src="/javascript/preload.js"></script>
   <script src="/javascript/jquery.min.js"></script>
+  <script src="/javascript/tether.min.js"></script><!--not sure it's needed -->
   <link rel="stylesheet" type="text/css" href="/stylesheets/styles.css">
+  <script src="/javascript/frontend.js"></script>
+  <script src="/javascript/settings.js"></script>
 </head>
 <body class="settings">
+
+<script type="text/javascript">
+accounts = <%- JSON.stringify(accounts) %>;
+</script>
 
 <section>
   <h4>Account</h4>
@@ -36,7 +44,7 @@
 
   <div>
     <label class="custom-file">
-      <input type="file" id="file" class="custom-file-input" directory>
+      <input type="file" id="file" class="custom-file-input" directory webkitdirectory>
       <span class="custom-file-control folder"></span>
     </label>
   </div>
@@ -45,8 +53,9 @@
 <hr/>
 
 <section>
-  <div class="text-sm-right">
-    <a class="btn btn-primary" href="/begin"><i class="fa fa-download"></i> Synchronize</a>
+  <div class="row space-between">
+    <span id="synchronize-status"></span>
+    <button class="btn btn-primary" onclick="beginSynchronization(accounts[0])"><i class="fa fa-download" id="synchronize-icon"></i> <span id="synchronize-text">Synchronize</span></button>
   </div>
 </section>
 

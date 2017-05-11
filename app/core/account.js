@@ -1,3 +1,5 @@
+const path = require('path');
+const os = require('os');
 const globals = require('../../config/globals');
 const google = require('googleapis');
 const drive = google.drive('v3');
@@ -10,6 +12,7 @@ class Account {
     if (doc) {
       this.load(doc);
     }
+    this.folder = this.folder || path.join(os.homedir(), "Google Drive");
     this.oauth = new OAuth2(globals.api, globals.secret, "http://odrive.io/authCallback");
     if (this.tokens) {
       this.onTokensReceived(this.tokens);

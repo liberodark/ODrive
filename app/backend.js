@@ -34,7 +34,8 @@ async function listen() {
 
     console.log("app started on port", port);
   } catch(err) {
-    console.log(err);
+    console.error(err);
+    process.exit(1);
   }
 }
 
@@ -43,7 +44,15 @@ listen();
 /* Handle error */
 process.on('unhandledRejection', error => {
   // Will print "unhandledRejection err is not defined"
-  console.error(error);
+  console.error('Unhandled rejection', error);
+});
+
+process.on('uncaughtException', error => {
+  console.error('Uncaught exception', error);
+  if(error.errno === 'EADDRINUSE') {
+    console.error('Make sure that another instance of OpenDrive is not running.');
+    process.exit(1);
+  }
 });
 
 module.exports = {

@@ -1,6 +1,6 @@
 const assert = require('assert');
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 
@@ -10,7 +10,7 @@ let listFilesFields = `nextPageToken, files(${fileInfoFields})`;
 class Sync {
   constructor(account) {
     this.account = account;
-    this.fileInfo = {};
+    this.fileInfo = {"root": {}};
   }
 
   get drive() {
@@ -30,11 +30,12 @@ class Sync {
 
       notify("Getting files info...");
 
-      let files = await this.filesList();
+      await this.downloadFolderStructure();
+
       let counter = 0;
       let ignored = 0;
 
-      for (let file of files) {
+      for (let file of Object.values(this.fileInfo)) {
         if (!("size" in file)) {
           /* Not a stored file, no need...
             Will handle google docs later.
@@ -52,14 +53,31 @@ class Sync {
       }
 
       notify(`All done! ${counter} files downloaded and ${ignored} ignored.`);
+      this.syncing = false;
     } catch (err) {
       this.syncing = false;
       throw err;
     }
   }
 
-  async filesList() {
-    let {nextPageToken, files} = await this.filesChunk();
+  async downloadFolderStructure(folder) {
+    /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
+    await delay(500);
+
+    console.log("Downloading folder structure for ", folder);
+    let files = await this.folderContents(folder);
+
+    for (let file of files) {
+      if (file.mimeType.includes("folder")) {
+        await this.downloadFolderStructure(file.id);
+      }
+    }
+  }
+
+  async folderContents(folder) {
+    folder = folder || "root";
+
+    let {nextPageToken, files} = await this.folderChunk({folder});
 
     console.log(files, nextPageToken);
     console.log("(Chunk 1)");
@@ -69,32 +87,35 @@ class Sync {
       /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
       await delay(2000);
 
-      let data = await this.filesChunk(nextPageToken);
+      let data = await this.folderChunk({pageToken: nextPageToken, folder});
       nextPageToken = data.nextPageToken;
       files = files.concat(data.files);
 
       counter += 1;
       console.log(data);
-
-      if (data.files[0].parents) {
-        console.log(data.files[0].parents[0]);
-      }
       console.log(`(Chunk ${counter})`, nextPageToken);
     }
 
     console.log("Files list done!");
+    this.fileInfo[folder].children = files;
 
     return files;
   }
 
-  async filesChunk(pageToken) {
+  async folderChunk(arg) {
+    let {pageToken, folder} = arg;
+
+    if (!folder) {
+      folder = "root";
+    }
+
     let result = await new Promise((resolve, reject) => {
       let args = {
         fields: listFilesFields,
         corpora: "user",
         space: "drive",
         pageSize: 1000,
-        q: "\"me\" in owners and trashed = false" //Receiving unwanted files, so this!
+        q: `trashed = false and "${folder}" in parents` //Receiving unwanted files, so this!
       };
 
       if (pageToken) {
@@ -110,29 +131,36 @@ class Sync {
       });
     });
 
+    /* Own folder structure to overwrite googledrive's shaky structure... */
     for (let file of result.files) {
-      this.fileInfo[file.id] = file;
+      if (file.id in this.fileInfo) {
+        this.fileInfo[file.id].computedParents.push(folder);
+      } else {
+        this.fileInfo[file.id] = file;
+        file.computedParents = [folder];
+      }
     }
 
     return result;
   }
 
-  async getParent(fileInfo) {
-    if (!fileInfo.parents || fileInfo.parents.length == 0) {
-      return null;
+  async getPaths(fileInfo) {
+    console.log('Get path',fileInfo);
+    if (!fileInfo.computedParents) {
+      console.log(this.folder);
+      return [this.folder];
     }
 
-    return await this.getFileInfo(fileInfo.parents[0]);
-  }
+    let ret = [];
 
-  async getPath(fileInfo) {
-    let parent = await this.getParent(fileInfo);
-
-    if (parent === null) {
-      return path.join(this.folder, fileInfo.name);
+    for (let parent of fileInfo.computedParents) {
+      let parentInfo = await this.getFileInfo(parent);
+      for (let parentPath of await this.getPaths(parentInfo)) {
+        ret.push(path.join(parentPath, fileInfo.name));
+      }
     }
 
-    return path.join(await this.getPath(parent), fileInfo.name);
+    return ret;
   }
 
   /* Gets file info from fileId.
@@ -158,19 +186,24 @@ class Sync {
   }
 
   async downloadFile(fileInfo) {
-    let savePath = await this.getPath(fileInfo);
+    let savePaths = await this.getPaths(fileInfo);
+    let savePath = savePaths.splice(0, 1)[0];
 
     /* Create the folder for the file first */
     await mkdirp(path.dirname(savePath));
 
     var dest = fs.createWriteStream(savePath);
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       this.drive.files.get({fileId: fileInfo.id, alt: "media"})
         .on('end', () => resolve())
         .on('error', err => reject(err))
         .pipe(dest);
     });
+
+    for (let otherPath of savePaths) {
+      await fs.copy(savePath, otherPath);
+    }
   }
 }
 

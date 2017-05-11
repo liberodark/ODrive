@@ -145,10 +145,13 @@ class Sync {
   }
 
   async getPaths(fileInfo) {
-    console.log('Get path',fileInfo);
-    if (!fileInfo.computedParents) {
-      console.log(this.folder);
+    console.log('Get path', fileInfo.name);
+    if (fileInfo.id == "root") {
       return [this.folder];
+    }
+    if (!fileInfo.computedParents) {
+      console.log("File out of the main folder structure", fileInfo);
+      return [];
     }
 
     let ret = [];
@@ -187,6 +190,10 @@ class Sync {
 
   async downloadFile(fileInfo) {
     let savePaths = await this.getPaths(fileInfo);
+
+    if (savePaths.length == 0) {
+      return;
+    }
     let savePath = savePaths.splice(0, 1)[0];
 
     /* Create the folder for the file first */

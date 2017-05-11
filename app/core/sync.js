@@ -62,7 +62,7 @@ class Sync {
 
   async downloadFolderStructure(folder) {
     /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
-    await delay(500);
+    await delay(100);
 
     console.log("Downloading folder structure for ", folder);
     let files = await this.folderContents(folder);
@@ -85,7 +85,7 @@ class Sync {
     let counter = 1;
     while(nextPageToken) {
       /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
-      await delay(2000);
+      await delay(500);
 
       let data = await this.folderChunk({pageToken: nextPageToken, folder});
       nextPageToken = data.nextPageToken;

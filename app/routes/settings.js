@@ -2,6 +2,7 @@ const Account = require('../core/account');
 const router = require("express").Router();
 const gbs = require('../../config/globals');
 const config = require('../core/config');
+const ipc = require('electron').ipcMain;
 
 router.get('/settings', async (req, res) => {
   let accounts = await config.accounts();
@@ -12,9 +13,7 @@ router.get('/settings', async (req, res) => {
 
 router.get('/connect', (req, res) => {
   let account = new Account();
-  let url = account.authUrl;
-  console.log(url);
-  res.redirect(url);
+  res.redirect(account.authUrl);
 });
 
 router.get('/add', (req, res) => {
@@ -33,6 +32,16 @@ router.get('/authCallback', async (req, res, next) => {
     res.redirect("/settings");
   } catch(err) {
     next(err);
+  }
+});
+
+ipc.on('start-sync', async ({sender}, {accountId}) => {
+  try {
+    let account = await config.accountById(accountId);
+    await account.sync.start(update => sender.send("sync-update", {accountId, update}));
+  } catch (err) {
+    console.error(err);
+    sender.send('error', err.message);
   }
 });
 

@@ -28,11 +28,24 @@ async function getAccounts() {
   return accounts;
 }
 
+async function getAccountById(id) {
+  let accounts = await getAccounts();
+
+  for (let account of accounts) {
+    if (account.id == id) {
+      return account;
+    }
+  }
+
+  return null;
+}
+
 function addAccount(account) {
   accounts.push(account);
 }
 
 module.exports = {
   accounts: getAccounts,
-  addAccount
+  addAccount,
+  accountById: getAccountById
 };

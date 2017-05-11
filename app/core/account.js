@@ -1,8 +1,8 @@
 const path = require('path');
 const os = require('os');
-const globals = require('../../config/globals');
 const google = require('googleapis');
-const drive = google.drive('v3');
+const Sync = require('./sync');
+const globals = require('../../config/globals');
 const OAuth2 = google.auth.OAuth2;
 
 const toSave = ["email", "about", "tokens"];
@@ -60,6 +60,7 @@ class Account {
       /*
         https://developers.google.com/drive/v3/reference/about/get
         https://developers.google.com/drive/v3/web/migration
+        https://developers.google.com/drive/v3/web/search-parameters
       */
       this.drive.about.get({q: "user.me == true", fields: "user"}, (err, about) => {
         console.log("User info", about);
@@ -92,6 +93,7 @@ class Account {
     } else {
       doc.type = "account";
       this.document = await globals.db.insert(doc);
+      this.id = this.document._id;
     }
   }
 
@@ -103,8 +105,8 @@ class Account {
         this[element] = doc[element];
       }
     }
-    this.email = doc.email;
-    this.tokens = doc.tokens;
+
+    this.id = doc._id;
   }
 
   onTokensReceived(tokens) {
@@ -116,6 +118,7 @@ class Account {
       version: 'v3',
       auth: this.oauth
     });
+    this.sync = new Sync(this);
 
     return this.updateUserInfo();
   }

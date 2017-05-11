@@ -30,4 +30,8 @@ body {
     margin-right: 0;
     margin-left: 0;
   }
+
+  #synchronize-status {
+    @extend .form-control-static;
+  }
 }

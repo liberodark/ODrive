@@ -39,6 +39,7 @@ ipc.on('start-sync', async ({sender}, {accountId}) => {
   try {
     let account = await config.accountById(accountId);
     await account.sync.start(update => sender.send("sync-update", {accountId, update}));
+    sender.send('sync-end');
   } catch (err) {
     console.error(err);
     sender.send('error', err.message);

@@ -63,7 +63,7 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
 <section>
   <div class="row space-between">
     <span id="synchronize-status"></span>
-    <button class="btn btn-primary" onclick="beginSynchronization(accounts[0])"><i class="fa fa-download" id="synchronize-icon"></i> <span id="synchronize-text">Synchronize</span></button>
+    <button class="btn btn-primary" id="synchronize-button" onclick="beginSynchronization(accounts[0])"><i class="fa fa-download" id="synchronize-icon"></i> <span id="synchronize-text">Synchronize</span></button>
   </div>
 </section>
 

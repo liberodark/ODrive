@@ -17,6 +17,13 @@ ipc.on('sync-update', ({sender}, arg) => {
   $("#synchronize-status").text(update);
 });
 
+ipc.on('sync-end', () => {
+  $("#synchronize-icon").removeClass();
+  $("#synchronize-icon").addClass("fa fa-download");
+  $("#synchronize-text").text('Synchronize');
+  $("#synchronize-button").prop("disabled", true);
+})
+
 ipc.on('error', ({sender}, message) => {
   console.log(message);
   $("#synchronize-status").text('Error: ' + message);

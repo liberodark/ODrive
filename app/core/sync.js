@@ -448,6 +448,10 @@ class Sync {
       }
     }
 
+    for (let _path of addedPaths) {
+      await mkdirp(path.dirname(_path));
+    }
+
     for (let i = 0; i < removedPaths.length; i += 1) {
       if (i < addedPaths.length) {
         await fs.rename(removedPaths[i], addedPaths[i]);

@@ -55,7 +55,7 @@ class Sync {
       let ignored = 0;
 
       for (let file of Object.values(this.fileInfo)) {
-        if (!("size" in file)) {
+        if (this.shouldIgnoreFile(file)) {
           /* Not a stored file, no need...
             Will handle google docs later.
           */
@@ -168,6 +168,10 @@ class Sync {
 
     if (newInfo.modifiedTime == oldInfo.modifiedTime) {
       /* Nothing happened */
+      return;
+    }
+
+    if (this.shouldIgnoreFile(fileInfo)) {
       return;
     }
 
@@ -466,6 +470,10 @@ class Sync {
     }
   }
 
+  shouldIgnoreFile(fileInfo) {
+    return !("size" in fileInfo);
+  }
+
   /* Gets file info from fileId.
 
     If the file info is not present in cache or if forceUpdate is true,
@@ -510,6 +518,11 @@ class Sync {
   }
 
   async downloadFile(fileInfo) {
+    console.log("Downlading file", fileInfo.name);
+    if (this.shouldIgnoreFile(fileInfo)) {
+      console.log("Ignoring file");
+      return;
+    }
     await this.finishLoading();
 
     let savePaths = await this.getPaths(fileInfo);
@@ -577,6 +590,7 @@ class Sync {
     };
 
     await globals.db.update({_id: this.id}, saveObject, {});
+    console.log("Saved new synchronization changes!");
 
     this.watchChanges();
   }

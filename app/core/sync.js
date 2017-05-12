@@ -116,12 +116,15 @@ class Sync {
 
     try {
       if (!this.changeToken) {
-        console.error("Error in application flow, no valid change token");
+        console.error(new Error("Error in application flow, no valid change token"));
         await this.startWatchingChanges();
       }
 
       while (1) {
-        await this.handleNewChanges();
+        /* Don't handle changes at the same time as syncing... */
+        if (!this.syncing) {
+          await this.handleNewChanges();
+        }
         await delay(10000);
       }
     } catch (err) {

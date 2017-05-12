@@ -25,6 +25,10 @@ async function getAccounts() {
     accounts.push(new Account(doc));
   }
 
+  for (let account of accounts) {
+    await account.finishLoading();
+  }
+
   return accounts;
 }
 

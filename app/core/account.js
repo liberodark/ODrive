@@ -28,15 +28,13 @@ class Account {
   get authUrl() {
     console.log("Generating oauth url");
     return this.oauth.generateAuthUrl({
-      // 'online' (default) or 'offline' (gets refresh_token)
       access_type: 'offline',
-
-      // If you only need one scope you can pass it as a string
       scope: 'https://www.googleapis.com/auth/drive',
-
-      // Optional property that passes state parameters to redirect URI
-      // state: { foo: 'bar' }
     });
+  }
+
+  get running() {
+    return !!(this.sync && this.sync.running);
   }
 
   /* Handle response code from authentification for google oauth */
@@ -107,6 +105,12 @@ class Account {
     }
 
     this.id = doc._id;
+  }
+
+  async finishLoading() {
+    if (this.sync) {
+      await this.sync.finishLoading();
+    }
   }
 
   onTokensReceived(tokens) {

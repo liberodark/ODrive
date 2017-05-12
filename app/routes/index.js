@@ -5,6 +5,8 @@ router.get('/', async (req, res) => {
   /* Redirect to options if there's at least one account */
   let accounts = await config.accounts();
 
+  console.log(accounts);
+
   if (accounts.length > 0) {
     return res.redirect("/settings");
   }

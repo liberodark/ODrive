@@ -22,7 +22,7 @@ ipc.on('sync-end', () => {
   $("#synchronize-icon").addClass("fa fa-download");
   $("#synchronize-text").text('Synchronize');
   $("#synchronize-button").prop("disabled", true);
-})
+});
 
 ipc.on('error', ({sender}, message) => {
   console.log(message);

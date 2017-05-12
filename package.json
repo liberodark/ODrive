@@ -7,6 +7,7 @@
   "author": "coyotte508 <coyotte508@gmail.com>",
   "license": "GPL-3.0",
   "dependencies": {
+    "array-unique": "^0.3.2",
     "body-parser": "^1.17.1",
     "bootstrap": "^4.0.0-alpha.6",
     "chokidar": "^1.6.1",

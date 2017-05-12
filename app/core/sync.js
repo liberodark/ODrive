@@ -3,9 +3,10 @@ const path = require("path");
 const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
+const unique = require("array-unique");
 const globals = require('../../config/globals');
 
-let fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents";
+let fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents, trashed";
 let listFilesFields = `nextPageToken, files(${fileInfoFields})`;
 let changeInfoFields = `time, removed, fileId, file(${fileInfoFields})`;
 let changesListFields = `nextPageToken, newStartPageToken, changes(${changeInfoFields})`;
@@ -148,6 +149,67 @@ class Sync {
   async handleChange(change) {
     /* Todo */
     console.log("Change", change);
+
+    /* Deleted file */
+    if (change.removed || change.file.trashed) {
+      await this.removeFileLocally(change.fileId);
+      return;
+    }
+
+    /* New file */
+    if (!(change.fileId in this.fileInfo)) {
+      await this.addFileLocally(change.file);
+      return;
+    }
+
+    /* Changed file */
+    let newInfo = change.file;
+    let oldInfo = this.fileInfo[change.fileId];
+
+    if (newInfo.modifiedTime == oldInfo.modifiedTime) {
+      /* Nothing happened */
+      return;
+    }
+
+    if (newInfo.md5Checksum != oldInfo.md5Checksum) {
+      /* Content changed, may as well delete it and redownload it */
+      await this.removeFileLocally(oldInfo.id);
+      await this.addFileLocally(newInfo);
+
+      return;
+    }
+
+    /* Changed Paths */
+    let oldPaths = await this.getPaths(oldInfo);
+    if (oldPaths.length == 0) {
+      await this.addFileLocally(newInfo);
+      return;
+    }
+    await this.storeFileInfo(newInfo);
+    await this.computeParents(newInfo);
+    let newPaths = await this.getPaths(newInfo);
+    await this.changePaths(oldPaths, newPaths);
+  }
+
+  async addFileLocally(fileInfo) {
+    await this.storeFileInfo(fileInfo);
+    await this.computeParents(fileInfo);
+    await this.downloadFile(fileInfo);
+  }
+
+  async removeFileLocally(fileId) {
+    if (!(fileId in this.fileInfo)) {
+      console.error("Impossible to remove unknown file id ", fileId);
+      return;
+    }
+
+    let fileInfo = this.fileInfo[fileId];
+    let paths = await this.getPaths(fileInfo);
+
+    delete this.fileInfo[fileId];
+    for (let path of paths) {
+      await fs.remove(path);
+    }
   }
 
   async getNewChanges() {
@@ -272,6 +334,76 @@ class Sync {
     return result;
   }
 
+  /* Check which folders in "My Drive" are parents of the file, and also
+    replace the id of the main folder by "root" in computedParents */
+  async computeParents(fileInfo) {
+    let fileId = fileInfo.id;
+    /* Remove self from children of old parents */
+    if (fileInfo.computedParents) {
+      for (let parent of fileInfo.computedParents) {
+        parent.children = parent.children.filter(id => id != fileId);
+      }
+    }
+    let parents = fileInfo.parents;
+
+    let computedParents = [];
+    let rootCheckDone = false;
+    for (let parent of parents) {
+      /* If the parent is recognized in the file structure, all is well */
+      if (parent in this.fileInfo && this.fileInfo[parent].computedParents) {
+        computedParents.push(parent);
+      } else {
+        /* Either the given id is a folder not in the structure (at least not the MyDrive structure) and we don't care for that, or ... it's the root folder */
+        if (rootCheckDone) {
+          continue;
+        }
+        if (await this.checkIfInRoot(fileInfo)) {
+          computedParents.push('root');
+        }
+        rootCheckDone = true;
+      }
+    }
+
+    /* Shouldn't happen, but protect ourselves against duplicate paths */
+    computedParents = unique(computedParents);
+    console.log("New computed parents for file", computedParents);
+    if (computedParents.length > 0) {
+      this.fileInfo[fileId].computedParents = computedParents;
+      for (let parent of computedParents) {
+        this.fileInfo[parent].children = this.fileInfo[parent].children || [];
+        this.fileInfo[parent].children.push(fileId);
+      }
+    }
+  }
+
+  /* Optimization to do: instead, redownload root folder contents once when receiving new changes */
+  async checkIfInRoot(fileInfo) {
+    let res = await new Promise((resolve, reject) => {
+      let args = {
+        fields: "files(id)",
+        corpora: "user",
+        spaces: "drive",
+        pageSize: 1000,
+        q: `trashed = false and "root" in parents and name = "${fileInfo.name.replace(/([\\"])/g, "\\$1")}"`
+      };
+      this.drive.files.list(args, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+
+        resolve(result);
+      });
+    });
+
+    for (let file of res.files) {
+      if (file.id == fileInfo.id) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async getPaths(fileInfo) {
     console.log('Get path', fileInfo.name);
     if (fileInfo.id == "root") {
@@ -292,6 +424,42 @@ class Sync {
     }
 
     return ret;
+  }
+
+  /* Rename / move files appropriately to new destinations */
+  async changePaths(oldPaths, newPaths) {
+    if (oldPaths.length == 0) {
+      console.log("Can't change path, past path is empty");
+      return;
+    }
+
+    let removedPaths = [];
+    let addedPaths = [];
+
+    for (let path of oldPaths) {
+      if (!newPaths.includes(path)) {
+        removedPaths.push(path);
+      }
+    }
+
+    for (let path of newPaths) {
+      if (!oldPaths.includes(path)) {
+        addedPaths.push(path);
+      }
+    }
+
+    for (let i = 0; i < removedPaths.length; i += 1) {
+      if (i < addedPaths.length) {
+        await fs.rename(removedPaths[i], addedPaths[i]);
+        continue;
+      }
+
+      await fs.remove(removedPaths[i]);
+    }
+
+    for (let i = removedPaths.length; i < addedPaths.length; i += 1) {
+      await fs.copy(newPaths[0], addedPaths[i]);
+    }
   }
 
   /* Gets file info from fileId.
@@ -318,6 +486,10 @@ class Sync {
     return this.replaceFileInfo(fileInfo);
   }
 
+  async storeFileInfo(info) {
+    return this.fileInfo[info.id] = info;
+  }
+
   /* Keep in mind the folder structure when updating file info */
   replaceFileInfo(info) {
     let oldInfo = this.fileInfo[info.id];
@@ -330,7 +502,7 @@ class Sync {
       }
     }
 
-    return this.fileInfo[info.id] = info;
+    return this.storeFileInfo(info);
   }
 
   async downloadFile(fileInfo) {

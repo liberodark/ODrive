@@ -87,12 +87,14 @@ class Account {
     }
 
     if (this.document) {
-      return globals.db.update({_id: doc._id}, doc, {});
+      await globals.db.update({_id: doc._id}, doc, {});
     } else {
       doc.type = "account";
       this.document = await globals.db.insert(doc);
       this.id = this.document._id;
     }
+
+    console.log("Saved account!");
   }
 
   load(doc) {

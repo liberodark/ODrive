@@ -141,6 +141,8 @@ class Sync {
       await this.handleChange(change);
     }
 
+    /* Only save at the end. Because we updated local change token in `this.getNewChanges`, so if it was saved prematurely and an error occurred, next load would skip over those changes. */
+
     if (changes.length > 0) {
       await this.save();
     }

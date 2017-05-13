@@ -171,7 +171,7 @@ class Sync {
       return;
     }
 
-    if (this.shouldIgnoreFile(fileInfo)) {
+    if (this.shouldIgnoreFile(newInfo)) {
       return;
     }
 

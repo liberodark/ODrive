@@ -53,13 +53,21 @@ To make sure the code is ok:
 npm test
 ```
 
-## Testing
+## Build
 
 To make a build for your OS:
 
+For Linux :
 ```bash
 electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds
+```
+For Mac :
+```bash
 electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds
+```
+
+For Windows :
+```bash
 electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds
 ```
 

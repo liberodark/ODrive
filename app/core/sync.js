@@ -4,6 +4,7 @@ const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const unique = require("array-unique");
+const deepEqual = require("deep-equal");
 const globals = require('../../config/globals');
 
 let fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents, trashed";
@@ -172,8 +173,8 @@ class Sync {
     let newInfo = change.file;
     let oldInfo = this.fileInfo[change.fileId];
 
-    if (newInfo.modifiedTime == oldInfo.modifiedTime) {
-      console.log("Same modified time, ignoring");
+    if (this.noChange(newInfo, oldInfo)) {
+      console.log("Same main info, ignoring");
       /* Nothing happened */
       return;
     }
@@ -205,6 +206,19 @@ class Sync {
 
     console.log("Moving file");
     await this.changePaths(oldPaths, newPaths);
+  }
+
+  noChange(oldInfo, newInfo) {
+    if (oldInfo.modifiedTime != newInfo.modifiedTime) {
+      return false;
+    }
+    if (oldInfo.name != newInfo.name) {
+      return false;
+    }
+    if (!deepEqual(oldInfo.parents, newInfo.parents)) {
+      return false;
+    }
+    return true;
   }
 
   async addFileLocally(fileInfo) {

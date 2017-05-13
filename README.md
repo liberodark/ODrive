@@ -51,8 +51,9 @@ To make sure the code is ok:
 
 ```bash
 npm test
+```
 
-## Build
+## Testing
 
 To make a build for your OS:
 
@@ -60,7 +61,6 @@ To make a build for your OS:
 electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds
 electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds
 electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds
-
 ```
 
 ## License

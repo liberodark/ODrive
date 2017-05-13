@@ -126,7 +126,7 @@ class Sync {
         if (!this.syncing) {
           await this.handleNewChanges();
         }
-        await delay(10000);
+        await delay(8000);
       }
     } catch (err) {
       this.watchingChanges = false;
@@ -152,12 +152,16 @@ class Sync {
 
     /* Deleted file */
     if (change.removed || change.file.trashed) {
+      console.log("deleted file");
       await this.removeFileLocally(change.fileId);
       return;
     }
 
+    console.log(change.fileId, this.fileInfo[change.fileId]);
+
     /* New file */
     if (!(change.fileId in this.fileInfo)) {
+      console.log("new file");
       await this.addFileLocally(change.file);
       return;
     }
@@ -167,15 +171,13 @@ class Sync {
     let oldInfo = this.fileInfo[change.fileId];
 
     if (newInfo.modifiedTime == oldInfo.modifiedTime) {
+      console.log("Same modified time, ignoring");
       /* Nothing happened */
       return;
     }
 
-    if (this.shouldIgnoreFile(newInfo)) {
-      return;
-    }
-
     if (newInfo.md5Checksum != oldInfo.md5Checksum) {
+      console.log("Different checksum, redownloading")
       /* Content changed, may as well delete it and redownload it */
       await this.removeFileLocally(oldInfo.id);
       await this.addFileLocally(newInfo);
@@ -186,12 +188,20 @@ class Sync {
     /* Changed Paths */
     let oldPaths = await this.getPaths(oldInfo);
     if (oldPaths.length == 0) {
+      console.log("Wasn't in main folder, downloading");
       await this.addFileLocally(newInfo);
       return;
     }
     await this.storeFileInfo(newInfo);
     await this.computeParents(newInfo);
+
+    if (this.shouldIgnoreFile(newInfo)) {
+      console.log("Ignoring file, content worthless");
+      return;
+    }
     let newPaths = await this.getPaths(newInfo);
+
+    console.log("Moving file");
     await this.changePaths(oldPaths, newPaths);
   }
 
@@ -470,7 +480,14 @@ class Sync {
     }
   }
 
+  isFolder(fileInfo) {
+    return fileInfo.mimeType.includes("folder");
+  }
+
   shouldIgnoreFile(fileInfo) {
+    if (this.isFolder(fileInfo)) {
+      return false;
+    }
     return !("size" in fileInfo);
   }
 
@@ -523,6 +540,10 @@ class Sync {
       console.log("Ignoring file");
       return;
     }
+    if (this.isFolder(fileInfo)) {
+      console.log("Doing nothing, it's a folder");
+      return;
+    }
     await this.finishLoading();
 
     let savePaths = await this.getPaths(fileInfo);
@@ -557,21 +578,28 @@ class Sync {
 
   /* Load in NeDB */
   async load() {
+    console.log("Loading sync object");
     let obj = await globals.db.findOne({type: "sync", accountId: this.account.id});
 
     if (obj) {
       this.changeToken = obj.changeToken;
-      this.fileId = obj.fileInfo;
+      this.fileInfo = obj.fileInfo;
       this.id = obj._id;
+    } else {
+      console.log("Nothing to load");
     }
 
     this.loaded = true;
 
-    this.watchChanges();
+    console.log("Loaded sync object! ");
+    if (obj) {
+      this.watchChanges();
+    }
   }
 
   /* Save in NeDB, overwriting previous entry */
   async save() {
+    console.log("Saving sync object");
     await this.finishLoading();
 
     if (!this.id) {

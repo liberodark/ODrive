@@ -114,7 +114,7 @@ class Account {
   }
 
   onTokensReceived(tokens) {
-    console.log("Auth tokens", tokens);
+    //console.log("Auth tokens", tokens);
     this.tokens = tokens;
 
     this.oauth.setCredentials(tokens);

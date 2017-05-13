@@ -15,7 +15,9 @@ let changesListFields = `nextPageToken, newStartPageToken, changes(${changeInfoF
 class Sync {
   constructor(account) {
     this.account = account;
-    this.fileInfo = {"root": {id: "root", name: "root"}};
+    this.fileInfo = {};
+    this.rootId = null;
+    this.synced = false;
     this.changeToken = null;
     this.loaded = false;
     this.watchingChanges = false;
@@ -45,17 +47,20 @@ class Sync {
     try {
       let notify = notifyCallback || (() => {});
 
+      let rootInfo = await this.getFileInfo("root");
+      this.rootId = rootInfo.id;
+
       notify("Watching changes in the remote folder...");
       await this.startWatchingChanges();
 
       notify("Getting files info...");
 
-      await this.downloadFolderStructure();
+      let files = await this.downloadFolderStructure("root");
 
       let counter = 0;
       let ignored = 0;
 
-      for (let file of Object.values(this.fileInfo)) {
+      for (let file of files) {
         if (this.shouldIgnoreFile(file)) {
           /* Not a stored file, no need...
             Will handle google docs later.
@@ -74,6 +79,7 @@ class Sync {
 
       notify(`All done! ${counter} files downloaded and ${ignored} ignored.`);
       this.syncing = false;
+      this.synced = true;
 
       await this.save();
     } catch (err) {
@@ -124,7 +130,7 @@ class Sync {
 
       while (1) {
         /* Don't handle changes at the same time as syncing... */
-        if (!this.syncing) {
+        if (!this.syncing && this.synced) {
           await this.handleNewChanges();
         }
         await delay(8000);
@@ -172,6 +178,7 @@ class Sync {
     /* Changed file */
     let newInfo = change.file;
     let oldInfo = this.fileInfo[change.fileId];
+    this.storeFileInfo(newInfo);
 
     if (this.noChange(newInfo, oldInfo)) {
       console.log("Same main info, ignoring");
@@ -195,8 +202,6 @@ class Sync {
       await this.addFileLocally(newInfo);
       return;
     }
-    await this.storeFileInfo(newInfo);
-    await this.computeParents(newInfo);
 
     if (this.shouldIgnoreFile(newInfo)) {
       console.log("Ignoring file, content worthless");
@@ -223,7 +228,6 @@ class Sync {
 
   async addFileLocally(fileInfo) {
     await this.storeFileInfo(fileInfo);
-    await this.computeParents(fileInfo);
     await this.downloadFile(fileInfo);
   }
 
@@ -283,19 +287,22 @@ class Sync {
     console.log("Downloading folder structure for ", folder);
     let files = await this.folderContents(folder);
 
+    let res = [].concat(files);//clone to a different array
     for (let file of files) {
       if (file.mimeType.includes("folder")) {
-        await this.downloadFolderStructure(file.id);
+        res = res.concat(await this.downloadFolderStructure(file.id));
       }
     }
+
+    return res;
   }
 
   async folderContents(folder) {
     await this.finishLoading();
 
-    folder = folder || "root";
+    let q = folder ? `trashed = false and "${folder}" in parents` : null;
 
-    let {nextPageToken, files} = await this.folderChunk({folder});
+    let {nextPageToken, files} = await this.filesListChunk({folder,q});
 
     console.log(files, nextPageToken);
     console.log("(Chunk 1)");
@@ -305,7 +312,7 @@ class Sync {
       /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
       await delay(500);
 
-      let data = await this.folderChunk({pageToken: nextPageToken, folder});
+      let data = await this.filesListChunk({pageToken: nextPageToken, q});
       nextPageToken = data.nextPageToken;
       files = files.concat(data.files);
 
@@ -315,27 +322,23 @@ class Sync {
     }
 
     console.log("Files list done!");
-    this.fileInfo[folder].children = files;
 
     return files;
   }
 
-  async folderChunk(arg) {
+  async filesListChunk(arg) {
     await this.finishLoading();
 
-    let {pageToken, folder} = arg;
-
-    if (!folder) {
-      folder = "root";
-    }
+    let {pageToken, q} = arg;
 
     let result = await new Promise((resolve, reject) => {
+      q = q || 'trashed = false'
       let args = {
         fields: listFilesFields,
         corpora: "user",
         spaces: "drive",
         pageSize: 1000,
-        q: `trashed = false and "${folder}" in parents` //Receiving unwanted files, so this!
+        q
       };
 
       if (pageToken) {
@@ -351,102 +354,22 @@ class Sync {
       });
     });
 
-    /* Own folder structure to overwrite googledrive's shaky structure... */
-    for (let file of result.files) {
-      if (file.id in this.fileInfo) {
-        this.fileInfo[file.id].computedParents.push(folder);
-      } else {
-        this.fileInfo[file.id] = file;
-        file.computedParents = [folder];
-      }
-    }
-
     return result;
-  }
-
-  /* Check which folders in "My Drive" are parents of the file, and also
-    replace the id of the main folder by "root" in computedParents */
-  async computeParents(fileInfo) {
-    let fileId = fileInfo.id;
-    /* Remove self from children of old parents */
-    if (fileInfo.computedParents) {
-      for (let parent of fileInfo.computedParents) {
-        parent.children = parent.children.filter(id => id != fileId);
-      }
-    }
-    let parents = fileInfo.parents;
-
-    let computedParents = [];
-    let rootCheckDone = false;
-    for (let parent of parents) {
-      /* If the parent is recognized in the file structure, all is well */
-      if (parent in this.fileInfo && this.fileInfo[parent].computedParents) {
-        computedParents.push(parent);
-      } else {
-        /* Either the given id is a folder not in the structure (at least not the MyDrive structure) and we don't care for that, or ... it's the root folder */
-        if (rootCheckDone) {
-          continue;
-        }
-        if (await this.checkIfInRoot(fileInfo)) {
-          computedParents.push('root');
-        }
-        rootCheckDone = true;
-      }
-    }
-
-    /* Shouldn't happen, but protect ourselves against duplicate paths */
-    computedParents = unique(computedParents);
-    console.log("New computed parents for file", computedParents);
-    if (computedParents.length > 0) {
-      this.fileInfo[fileId].computedParents = computedParents;
-      for (let parent of computedParents) {
-        this.fileInfo[parent].children = this.fileInfo[parent].children || [];
-        this.fileInfo[parent].children.push(fileId);
-      }
-    }
-  }
-
-  /* Optimization to do: instead, redownload root folder contents once when receiving new changes */
-  async checkIfInRoot(fileInfo) {
-    let res = await new Promise((resolve, reject) => {
-      let args = {
-        fields: "files(id)",
-        corpora: "user",
-        spaces: "drive",
-        pageSize: 1000,
-        q: `trashed = false and "root" in parents and name = "${fileInfo.name.replace(/([\\"])/g, "\\$1")}"`
-      };
-      this.drive.files.list(args, (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(result);
-      });
-    });
-
-    for (let file of res.files) {
-      if (file.id == fileInfo.id) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   async getPaths(fileInfo) {
     console.log('Get path', fileInfo.name);
-    if (fileInfo.id == "root") {
+    if (fileInfo.id == this.rootId) {
       return [this.folder];
     }
-    if (!fileInfo.computedParents) {
+    if (!fileInfo.parents) {
       console.log("File out of the main folder structure", fileInfo);
       return [];
     }
 
     let ret = [];
 
-    for (let parent of fileInfo.computedParents) {
+    for (let parent of fileInfo.parents) {
       let parentInfo = await this.getFileInfo(parent);
       for (let parentPath of await this.getPaths(parentInfo)) {
         ret.push(path.join(parentPath, fileInfo.name));
@@ -501,6 +424,9 @@ class Sync {
   }
 
   shouldIgnoreFile(fileInfo) {
+    if (fileInfo.id == this.rootId) {
+      return true;
+    }
     if (this.isFolder(fileInfo)) {
       return false;
     }
@@ -528,26 +454,11 @@ class Sync {
       });
     });
 
-    return this.replaceFileInfo(fileInfo);
+    return this.storeFileInfo(fileInfo);
   }
 
   async storeFileInfo(info) {
     return this.fileInfo[info.id] = info;
-  }
-
-  /* Keep in mind the folder structure when updating file info */
-  replaceFileInfo(info) {
-    let oldInfo = this.fileInfo[info.id];
-    if (oldInfo) {
-      if (oldInfo.computedParents) {
-        info.computedParents = oldInfo.computedParents;
-      }
-      if (oldInfo.children) {
-        info.children = oldInfo.children;
-      }
-    }
-
-    return this.storeFileInfo(info);
   }
 
   async downloadFile(fileInfo) {
@@ -600,6 +511,8 @@ class Sync {
     if (obj) {
       this.changeToken = obj.changeToken;
       this.fileInfo = obj.fileInfo;
+      this.synced = obj.synced;
+      this.rootId = obj.rootId;
       this.id = obj._id;
     } else {
       console.log("Nothing to load");
@@ -608,7 +521,7 @@ class Sync {
     this.loaded = true;
 
     console.log("Loaded sync object! ");
-    if (obj) {
+    if (obj && obj.synced) {
       this.watchChanges();
     }
   }
@@ -630,6 +543,8 @@ class Sync {
       accountId: this.account.id,
       changeToken: this.changeToken,
       fileInfo: this.fileInfo,
+      rootId: this.rootId,
+      synced: this.synced,
       _id: this.id
     };
 

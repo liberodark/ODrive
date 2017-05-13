@@ -51,6 +51,16 @@ To make sure the code is ok:
 
 ```bash
 npm test
+
+## Build
+
+To make a build for your OS:
+
+```bash
+electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds
+electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds
+electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds
+
 ```
 
 ## License

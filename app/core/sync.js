@@ -275,11 +275,15 @@ class Sync {
       return false;
     }
 
+    let removed = false;
     for (let path of paths) {
-      await fs.remove(path);
+      if (await fs.exists(path)) {
+        await fs.remove(path);
+        removed = true;
+      }
     }
 
-    return true;
+    return removed;
   }
 
   async getNewChanges() {

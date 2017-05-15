@@ -42,16 +42,30 @@ async function listen() {
 listen();
 
 /* Handle error */
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', async (error) => {
   // Will print "unhandledRejection err is not defined"
   console.error('Unhandled rejection', error);
+
+  if (error.errno == "ECONNRESET" || error.errno == "ECONNREFUSED") {
+    if (error.syncObject && error.watcher) {
+      console.log("Connection error when watching changes, restarting in 10 seconds");
+      setTimeout(10000, () => error.syncObject.load());
+    }
+  }
 });
 
 process.on('uncaughtException', error => {
   console.error('Uncaught exception', error);
   if(error.errno === 'EADDRINUSE') {
     console.error('Make sure that another instance of OpenDrive is not running.');
-    process.exit(1);
+    return process.exit(1);
+  }
+
+  if (error.errno == "ECONNRESET" || error.errno == "ECONNREFUSED") {
+    if (error.syncObject && error.watcher) {
+      console.log("Connection error when watching changes, restarting in 10 seconds");
+      setTimeout(10000, () => error.syncObject.load());
+    }
   }
 });
 

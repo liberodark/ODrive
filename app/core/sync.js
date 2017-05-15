@@ -3,14 +3,15 @@ const path = require("path");
 const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
-const unique = require("array-unique");
 const deepEqual = require("deep-equal");
 const globals = require('../../config/globals');
 
-let fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents, trashed";
-let listFilesFields = `nextPageToken, files(${fileInfoFields})`;
-let changeInfoFields = `time, removed, fileId, file(${fileInfoFields})`;
-let changesListFields = `nextPageToken, newStartPageToken, changes(${changeInfoFields})`;
+const fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents, trashed";
+const listFilesFields = `nextPageToken, files(${fileInfoFields})`;
+const changeInfoFields = `time, removed, fileId, file(${fileInfoFields})`;
+const changesListFields = `nextPageToken, newStartPageToken, changes(${changeInfoFields})`;
+
+const toSave = ["changeToken", "fileInfo", "synced", "rootId", "changesToExecute"];
 
 class Sync {
   constructor(account) {
@@ -19,6 +20,7 @@ class Sync {
     this.rootId = null;
     this.synced = false;
     this.changeToken = null;
+    this.changesToExecute = null;
     this.loaded = false;
     this.watchingChanges = false;
 
@@ -128,6 +130,7 @@ class Sync {
         await this.startWatchingChanges();
       }
 
+      // eslint-disable-next-line no-constant-condition
       while (1) {
         /* Don't handle changes at the same time as syncing... */
         if (!this.syncing && this.synced) {
@@ -137,20 +140,25 @@ class Sync {
       }
     } catch (err) {
       this.watchingChanges = false;
+
+      /* For the unhandledRejection handler */
+      err.syncObject = this;
+      err.watcher = true;
+      /* .... */
+    
       throw err;
     }
   }
 
   async handleNewChanges() {
-    let changes = await this.getNewChanges();
+    this.changesToExecute = await this.getNewChanges();
 
-    for (let change of changes) {
-      await this.handleChange(change);
-    }
+    await this.handleChanges();
+  }
 
-    /* Only save at the end. Because we updated local change token in `this.getNewChanges`, so if it was saved prematurely and an error occurred, next load would skip over those changes. */
-
-    if (changes.length > 0) {
+  async handleChanges() {
+    while((this.changesToExecute||[]).length > 0) {
+      await this.handleChange(this.changesToExecute.shift());
       await this.save();
     }
   }
@@ -187,7 +195,7 @@ class Sync {
     }
 
     if (newInfo.md5Checksum != oldInfo.md5Checksum) {
-      console.log("Different checksum, redownloading")
+      console.log("Different checksum, redownloading");
       /* Content changed, may as well delete it and redownload it */
       await this.removeFileLocally(oldInfo.id);
       await this.addFileLocally(newInfo);
@@ -332,7 +340,7 @@ class Sync {
     let {pageToken, q} = arg;
 
     let result = await new Promise((resolve, reject) => {
-      q = q || 'trashed = false'
+      q = q || 'trashed = false';
       let args = {
         fields: listFilesFields,
         corpora: "user",
@@ -478,7 +486,7 @@ class Sync {
     if (savePaths.length == 0) {
       return;
     }
-    let savePath = savePaths.splice(0, 1)[0];
+    let savePath = savePaths.shift();
 
     /* Create the folder for the file first */
     await mkdirp(path.dirname(savePath));
@@ -503,26 +511,46 @@ class Sync {
     }
   }
 
+  async finishSaveOperation() {
+    while (this.loading || this.saving) {
+      await delay(20);
+    }
+  }
+
   /* Load in NeDB */
   async load() {
-    console.log("Loading sync object");
-    let obj = await globals.db.findOne({type: "sync", accountId: this.account.id});
-
-    if (obj) {
-      this.changeToken = obj.changeToken;
-      this.fileInfo = obj.fileInfo;
-      this.synced = obj.synced;
-      this.rootId = obj.rootId;
-      this.id = obj._id;
-    } else {
-      console.log("Nothing to load");
+    /* No reason to load a saving file or reload the file */
+    if (this.loading || this.saving) {
+      return await this.finishSaveOperation();
     }
+    this.loading = true;
 
-    this.loaded = true;
+    try {
+      console.log("Loading sync object");
+      let obj = await globals.db.findOne({type: "sync", accountId: this.account.id});
 
-    console.log("Loaded sync object! ");
-    if (obj && obj.synced) {
-      this.watchChanges();
+      if (obj) {
+        for (let item of toSave) {
+          this[item] = obj[item];
+        }
+        this.id = obj._id;
+      } else {
+        console.log("Nothing to load");
+      }
+      console.log("Loaded sync object! ");
+
+      //Load changes that might have not gotten throughs
+      await this.handleChanges();
+
+      this.loaded = true;
+
+      if (obj && obj.synced) {
+        this.watchChanges();
+      }
+      this.loading = false;
+    } catch (err) {
+      this.loading = false;
+      throw err;
     }
   }
 
@@ -531,27 +559,38 @@ class Sync {
     console.log("Saving sync object");
     await this.finishLoading();
 
-    if (!this.id) {
-      //Create new object
-      let obj = await globals.db.insert({type: "sync", accountId: this.account.id});
-      this.id = obj._id;
+    if (this.loading || this.saving) {
+      return await this.finishSaveOperation();
     }
+    this.saving = true;
 
-    /* Save object */
-    let saveObject = {
-      type: "sync",
-      accountId: this.account.id,
-      changeToken: this.changeToken,
-      fileInfo: this.fileInfo,
-      rootId: this.rootId,
-      synced: this.synced,
-      _id: this.id
-    };
+    try {
+      if (!this.id) {
+        //Create new object
+        let obj = await globals.db.insert({type: "sync", accountId: this.account.id});
+        this.id = obj._id;
+      }
 
-    await globals.db.update({_id: this.id}, saveObject, {});
-    console.log("Saved new synchronization changes!");
+      /* Save object */
+      let saveObject = {
+        type: "sync",
+        accountId: this.account.id,
+        _id: this.id
+      };
 
-    this.watchChanges();
+      for (let item of toSave) {
+        saveObject[item] = this[item];
+      }
+
+      await globals.db.update({_id: this.id}, saveObject, {});
+      console.log("Saved new synchronization changes!");
+
+      this.watchChanges();
+      this.saving = false;
+    } catch(err) {
+      this.saving = false;
+      throw err;
+    }
   }
 }
 

@@ -43,6 +43,8 @@ ipc.on('start-sync', async ({sender}, {accountId}) => {
   } catch (err) {
     console.error(err);
     sender.send('error', err.message);
+    /* If synchronization didn't go through to the end, we enable the user to do it again */
+    sender.send('sync-enable');
   }
 });
 

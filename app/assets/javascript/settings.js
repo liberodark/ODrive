@@ -1,6 +1,7 @@
 /* global $ */
 const ipc = require('electron').ipcRenderer;
 
+// eslint-disable-next-line no-unused-vars
 function beginSynchronization(account) {
   console.log(account);
 
@@ -22,6 +23,13 @@ ipc.on('sync-end', () => {
   $("#synchronize-icon").addClass("fa fa-download");
   $("#synchronize-text").text('Synchronize');
   $("#synchronize-button").prop("disabled", true);
+});
+
+ipc.on('sync-enable', () => {
+  $("#synchronize-icon").removeClass();
+  $("#synchronize-icon").addClass("fa fa-download");
+  $("#synchronize-text").text('Synchronize');
+  $("#synchronize-button").prop("disabled", false);
 });
 
 ipc.on('error', ({sender}, message) => {

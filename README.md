@@ -57,6 +57,15 @@ npm test
 
 To make a build for your OS:
 
+
+for use in npm scripts
+```bash
+npm install electron-packager --save-dev
+```
+for use from cli
+```bash
+sudo npm install electron-packager -g
+```
 For Linux :
 ```bash
 electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds

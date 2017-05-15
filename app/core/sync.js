@@ -157,18 +157,17 @@ class Sync {
   }
 
   async handleChanges() {
-    let saved = false;
-    let initialCount = (this.changesToExecute||[]);
+
+    let initialCount = (this.changesToExecute||[]).length;
     while((this.changesToExecute||[]).length > 0) {
       let nextChange = this.changesToExecute.shift();
       if (await this.handleChange(nextChange)) {
         await this.save();
-        saved = true;
       }
     }
 
-    /* Even if they were all meaningless operations, still save if there were enough of them */
-    if (initialCount >= 10 && !saved) {
+    /* Save regularly if there are changes, even if they're worthless. At least it updates the change token. */
+    if ( (Date.now() - this.savedTime) > 30000 && initialCount > 0) {
       await this.save();
     }
   }
@@ -614,6 +613,7 @@ class Sync {
       }
 
       await globals.db.update({_id: this.id}, saveObject, {});
+      this.savedTime = Date.now();
       console.log("Saved new synchronization changes!");
 
       this.watchChanges();

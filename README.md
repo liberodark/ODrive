@@ -53,7 +53,7 @@ To make sure the code is ok:
 npm test
 ```
 
-## Build
+## Make Executable
 
 To make a build for your OS:
 

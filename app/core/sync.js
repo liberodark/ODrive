@@ -145,7 +145,7 @@ class Sync {
       err.syncObject = this;
       err.watcher = true;
       /* .... */
-    
+
       throw err;
     }
   }
@@ -157,8 +157,18 @@ class Sync {
   }
 
   async handleChanges() {
+    let saved = false;
+    let initialCount = (this.changesToExecute||[]);
     while((this.changesToExecute||[]).length > 0) {
-      await this.handleChange(this.changesToExecute.shift());
+      let nextChange = this.changesToExecute.shift();
+      if (await this.handleChange(nextChange)) {
+        await this.save();
+        saved = true;
+      }
+    }
+
+    /* Even if they were all meaningless operations, still save if there were enough of them */
+    if (initialCount >= 10 && !saved) {
       await this.save();
     }
   }
@@ -170,8 +180,7 @@ class Sync {
     /* Deleted file */
     if (change.removed || change.file.trashed) {
       console.log("deleted file");
-      await this.removeFileLocally(change.fileId);
-      return;
+      return await this.removeFileLocally(change.fileId);
     }
 
     console.log(change.fileId, this.fileInfo[change.fileId]);
@@ -179,8 +188,7 @@ class Sync {
     /* New file */
     if (!(change.fileId in this.fileInfo)) {
       console.log("new file");
-      await this.addFileLocally(change.file);
-      return;
+      return await this.addFileLocally(change.file);
     }
 
     /* Changed file */
@@ -191,7 +199,15 @@ class Sync {
     if (this.noChange(newInfo, oldInfo)) {
       console.log("Same main info, ignoring");
       /* Nothing happened */
-      return;
+      return false;
+    }
+
+    let oldPaths = await this.getPaths(oldInfo);
+    let newPaths = await this.getPaths(newInfo);
+
+    if (newPaths.length == 0 && oldPaths.length == 0) {
+      console.log("Not in main folder, ignoring");
+      return false;
     }
 
     if (newInfo.md5Checksum != oldInfo.md5Checksum) {
@@ -200,25 +216,31 @@ class Sync {
       await this.removeFileLocally(oldInfo.id);
       await this.addFileLocally(newInfo);
 
-      return;
+      return true;
     }
 
     /* Changed Paths */
-    let oldPaths = await this.getPaths(oldInfo);
     if (oldPaths.length == 0) {
       console.log("Wasn't in main folder, downloading");
-      await this.addFileLocally(newInfo);
-      return;
+      return await this.addFileLocally(newInfo);
     }
 
     if (this.shouldIgnoreFile(newInfo)) {
       console.log("Ignoring file, content worthless");
-      return;
+      return false;
     }
-    let newPaths = await this.getPaths(newInfo);
 
-    console.log("Moving file");
+    oldPaths.sort();
+    newPaths.sort();
+
+    if (deepEqual(oldPaths, newPaths)) {
+      console.log("Same file names, ignoring");
+      return false;
+    }
+
+    console.log("Moving files");
     await this.changePaths(oldPaths, newPaths);
+    return true;
   }
 
   noChange(oldInfo, newInfo) {
@@ -236,22 +258,29 @@ class Sync {
 
   async addFileLocally(fileInfo) {
     await this.storeFileInfo(fileInfo);
-    await this.downloadFile(fileInfo);
+    return await this.downloadFile(fileInfo);
   }
 
   async removeFileLocally(fileId) {
     if (!(fileId in this.fileInfo)) {
       console.error("Impossible to remove unknown file id ", fileId);
-      return;
+      return false;
     }
 
     let fileInfo = this.fileInfo[fileId];
     let paths = await this.getPaths(fileInfo);
 
     delete this.fileInfo[fileId];
+
+    if (paths.length == 0) {
+      return false;
+    }
+
     for (let path of paths) {
       await fs.remove(path);
     }
+
+    return true;
   }
 
   async getNewChanges() {
@@ -473,18 +502,18 @@ class Sync {
     console.log("Downlading file", fileInfo.name);
     if (this.shouldIgnoreFile(fileInfo)) {
       console.log("Ignoring file");
-      return;
+      return false;
     }
     if (this.isFolder(fileInfo)) {
       console.log("Doing nothing, it's a folder");
-      return;
+      return false;
     }
     await this.finishLoading();
 
     let savePaths = await this.getPaths(fileInfo);
 
     if (savePaths.length == 0) {
-      return;
+      return false;
     }
     let savePath = savePaths.shift();
 
@@ -503,6 +532,8 @@ class Sync {
     for (let otherPath of savePaths) {
       await fs.copy(savePath, otherPath);
     }
+
+    return true;
   }
 
   async finishLoading() {

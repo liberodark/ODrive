@@ -13,6 +13,9 @@ let db = new DataStore({
 
 globals.db = db;
 
+//Autocompaction, since nedb-promise doesn't let us access it immediately
+setInterval(() => db.loadDatabase(), 30000);
+
 async function getAccounts() {
   if (accounts !== null) {
     return accounts;

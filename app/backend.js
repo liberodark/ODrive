@@ -11,6 +11,8 @@ var app = express();
 const port = require('../config/globals').port;
 
 app.set('view engine', 'ejs');
+/* Needed because of packager, wouldn't find the views directory otherwise */
+app.set('views', path.join(__dirname, '../', 'views'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));

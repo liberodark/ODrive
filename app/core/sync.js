@@ -391,7 +391,7 @@ class Sync {
 
     let {pageToken, q} = arg;
 
-    let result = await new Promise((resolve, reject) => {
+    let getChunk = () => new Promise((resolve, reject) => {
       q = q || 'trashed = false';
       let args = {
         fields: listFilesFields,
@@ -414,7 +414,7 @@ class Sync {
       });
     });
 
-    return result;
+    return await this.tryTwice(getChunk);
   }
 
   async getPaths(fileInfo) {

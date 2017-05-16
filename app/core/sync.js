@@ -493,6 +493,21 @@ class Sync {
     return !("size" in fileInfo);
   }
 
+  async tryTwice(fn) {
+    try {
+      return await fn();
+    } catch(err) {
+      if (err.errno != 'ECONNRESET') {
+        throw err;
+      }
+    }
+
+    console.error("Connection error received, waiting 2 seconds and retrying");
+    await delay(2000);
+
+    return await fn();
+  }
+
   /* Gets file info from fileId.
 
     If the file info is not present in cache or if forceUpdate is true,
@@ -500,12 +515,12 @@ class Sync {
   async getFileInfo(fileId, forceUpdate) {
     await this.finishLoading();
 
-    console.log("Getting individual filed info: ", fileId);
+    console.log("Getting individual file info: ", fileId);
     if (!forceUpdate && (fileId in this.fileInfo)) {
       return this.fileInfo[fileId];
     }
 
-    let fileInfo = await new Promise((resolve, reject) => {
+    let getFileInfo = () => new Promise((resolve, reject) => {
       this.drive.files.get({fileId, fields: fileInfoFields}, (err, result) => {
         if (err) {
           return reject(err);
@@ -513,6 +528,8 @@ class Sync {
         resolve(result);
       });
     });
+
+    let fileInfo = await this.tryTwice(getFileInfo);
 
     return this.storeFileInfo(fileInfo);
   }

@@ -322,7 +322,7 @@ class Sync {
     await this.finishLoading();
 
     /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
-    await delay(100);
+    await delay(110);
 
     console.log("Downloading folder structure for ", folder);
     let files = await this.folderContents(folder);
@@ -524,6 +524,8 @@ class Sync {
     await mkdirp(path.dirname(savePath));
 
     var dest = fs.createWriteStream(savePath);
+
+    await delay(80);
 
     await new Promise((resolve, reject) => {
       this.drive.files.get({fileId: fileInfo.id, alt: "media"})

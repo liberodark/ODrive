@@ -47,7 +47,7 @@ listen();
 /* Handle error */
 process.on('unhandledRejection', async (error) => {
   // Will print "unhandledRejection err is not defined"
-  console.error('Unhandled rejection')
+  console.error('Unhandled rejection');
   console.error(error);
 
   if (isConnectionError(error)) {

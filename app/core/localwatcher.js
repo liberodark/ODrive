@@ -1,7 +1,10 @@
+const EventEmitter = require('events');
 const chokidar = require("chokidar");
 
-class LocalWatcher {
+class LocalWatcher extends EventEmitter {
   constructor(syncObject) {
+    super();
+
     this.sync = syncObject;
 
     this.ready = false;
@@ -51,7 +54,7 @@ class LocalWatcher {
     this.cache[path] = {
       timer: 0,
       events: []
-    }
+    };
   }
 
   addCache(path, event) {
@@ -62,24 +65,28 @@ class LocalWatcher {
     let cache = this.cache[path];
     clearTimeout(cache.timer);
     cache.events.push(event);
-    cache.timer = setTimeout(() => this.analyzeCache(path), 2000);
+    cache.timer = setTimeout(() => this.analyzeCache(path), 1000);
   }
 
   analyzeCache(path) {
     let cache = this.cache[path];
 
-    if (!cache) {
+    /* Ignore is when the main process modifies the file and so doesn't want to be notified of recent changes to it */
+    if (!cache || cache.events.includes("ignore")) {
       return this.clearCache(path);
     }
 
-    for (let event of cache.events) {
-      /* Ignore is when the main process modifies the file and so doesn't want to be notified of recent changes to it */
-      if (event == "ignore") {
-        return this.clearCache(path);
-      }
+    let events = cache.events;
+
+    /* Get last important event */
+    let lastIndex = Math.max(events.lastIndexOf('unlink'), events.lastIndexOf('unlinkDir'), events.lastIndexOf('add'), events.lastIndexOf('addDir'));
+    if (lastIndex != -1) {
+      this.emit(events[lastIndex], path);
+    } else {
+      this.emit(events.pop(), path);
     }
 
-    //Todo: analyze further...
+    this.clearCache(path);
   }
 
   ignore(path) {

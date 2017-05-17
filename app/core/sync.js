@@ -281,6 +281,7 @@ class Sync {
     let removed = false;
     for (let path of paths) {
       if (await fs.exists(path)) {
+        this.watcher.ignore(path);
         await fs.remove(path);
         removed = true;
       }
@@ -450,14 +451,18 @@ class Sync {
 
     for (let i = 0; i < removedPaths.length; i += 1) {
       if (i < addedPaths.length) {
+        this.watcher.ignore(removedPaths[i]);
+        this.watcher.ignore(addedPaths[i]);
         await fs.rename(removedPaths[i], addedPaths[i]);
         continue;
       }
 
+      this.watcher.ignore(removedPaths[i]);
       await fs.remove(removedPaths[i]);
     }
 
     for (let i = removedPaths.length; i < addedPaths.length; i += 1) {
+      this.watcher.ignore(addedPaths[i]);
       await fs.copy(newPaths[0], addedPaths[i]);
     }
   }
@@ -550,15 +555,21 @@ class Sync {
     console.log("Starting the actual download...");
 
     await this.tryTwice(() => new Promise((resolve, reject) => {
+      this.watcher.ignore(dest);
       this.drive.files.get({fileId: fileInfo.id, alt: "media"})
         .on('end', () => resolve())
         .on('error', err => reject(err))
         .pipe(dest);
+    }).catch(async (err) => {
+      /* Remove a partial download in case of err, don't want it to be synchronized later on */
+      await fs.remove(dest);
+      throw err;
     }));
     console.log("Download ended!");
 
     for (let otherPath of savePaths) {
       console.log("copying file to folder ", otherPath);
+      this.watcher.ignore(otherPath);
       await fs.copy(savePath, otherPath);
     }
 

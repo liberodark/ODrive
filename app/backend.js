@@ -2,6 +2,7 @@ const path = require("path");
 /* Express stuff */
 const express = require('express');
 const bodyParser = require('body-parser');
+const isConnectionError = require('./modules/isconnectionerror');
 
 /* Local stuff */
 const router = require('./routes/index');
@@ -46,12 +47,13 @@ listen();
 /* Handle error */
 process.on('unhandledRejection', async (error) => {
   // Will print "unhandledRejection err is not defined"
-  console.error('Unhandled rejection', error);
+  console.error('Unhandled rejection')
+  console.error(error);
 
-  if (error.errno == "ECONNRESET" || error.errno == "ECONNREFUSED") {
+  if (isConnectionError(error)) {
     if (error.syncObject && error.watcher) {
       console.log("Connection error when watching changes, restarting in 10 seconds");
-      setTimeout(10000, () => error.syncObject.load());
+      setTimeout(() => error.syncObject.load(), 10000);
     }
   }
 });
@@ -63,10 +65,10 @@ process.on('uncaughtException', error => {
     return process.exit(1);
   }
 
-  if (error.errno == "ECONNRESET" || error.errno == "ECONNREFUSED") {
+  if (isConnectionError(error)) {
     if (error.syncObject && error.watcher) {
       console.log("Connection error when watching changes, restarting in 10 seconds");
-      setTimeout(10000, () => error.syncObject.load());
+      setTimeout(() => error.syncObject.load(), 10000);
     }
   }
 });

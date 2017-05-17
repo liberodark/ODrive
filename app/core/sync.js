@@ -497,7 +497,7 @@ class Sync {
     try {
       return await fn();
     } catch(err) {
-      if (err.errno != 'ECONNRESET') {
+      if (err.code != 'ECONNRESET') {
         throw err;
       }
     }
@@ -564,14 +564,18 @@ class Sync {
 
     await delay(80);
 
-    await new Promise((resolve, reject) => {
+    console.log("Starting the actual download...");
+
+    await this.tryTwice(() => new Promise((resolve, reject) => {
       this.drive.files.get({fileId: fileInfo.id, alt: "media"})
         .on('end', () => resolve())
         .on('error', err => reject(err))
         .pipe(dest);
-    });
+    }));
+    console.log("Download ended!");
 
     for (let otherPath of savePaths) {
+      console.log("copying file to folder ", otherPath);
       await fs.copy(savePath, otherPath);
     }
 

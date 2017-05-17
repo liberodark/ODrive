@@ -391,7 +391,13 @@ class Sync {
   }
 
   async onLocalDirRemoved(src) {
+    if (src == this.folder) {
+      console.error("Google drive folder removed?!?!?!?");
+      process.exit(1);
+    }
     console.log("onLocalDirRemoved", src);
+
+    this.onLocalFileRemoved(src);
   }
 
   async removeFileLocally(fileId) {

@@ -35,16 +35,15 @@ class LocalWatcher extends EventEmitter {
       .on('unlinkDir', path => this.queue(path, 'unlinkDir'))
       .on('error', error => log(`Watcher error: ${error}`))
       .on('raw', (event, path, details) => {
-        log('Raw event info:', event, path, details);
+        //log('Raw event info:', event, path, details);
       });
   }
 
   queue(path, event, stats) {
-    console.log(path, event, stats);
-
     if (!this.ready) {
       return;
     }
+    console.log(path, event, stats);
 
     this.addCache(path, event);
   }
@@ -55,6 +54,10 @@ class LocalWatcher extends EventEmitter {
       timer: 0,
       events: []
     };
+  }
+
+  clearCache(path) {
+    delete this.cache[path];
   }
 
   addCache(path, event) {
@@ -73,16 +76,20 @@ class LocalWatcher extends EventEmitter {
 
     /* Ignore is when the main process modifies the file and so doesn't want to be notified of recent changes to it */
     if (!cache || cache.events.includes("ignore")) {
+      console.log("ignoring events for path", path);
       return this.clearCache(path);
     }
 
     let events = cache.events;
 
     /* Get last important event */
+    console.log("Events", events);
     let lastIndex = Math.max(events.lastIndexOf('unlink'), events.lastIndexOf('unlinkDir'), events.lastIndexOf('add'), events.lastIndexOf('addDir'));
     if (lastIndex != -1) {
+      console.log("Emitting last important event for", path, events[lastIndex]);
       this.emit(events[lastIndex], path);
     } else {
+      console.log("Emitting last event for", path);
       this.emit(events.pop(), path);
     }
 

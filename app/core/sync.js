@@ -1,9 +1,11 @@
 const assert = require('assert');
 const path = require("path");
+const uuid = require("uuid");
 const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
+const md5file = require('md5-file/promise');
 
 const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');
@@ -19,6 +21,7 @@ class Sync {
   constructor(account) {
     this.account = account;
     this.fileInfo = {};
+    this.paths = {};
     this.rootId = null;
     this.synced = false;
     this.changeToken = null;
@@ -27,6 +30,8 @@ class Sync {
     this.watchingChanges = false;
 
     this.watcher = new LocalWatcher(this);
+    this.initWatcher();
+
     /* Check if already in memory */
     this.load();
   }
@@ -196,7 +201,7 @@ class Sync {
     /* Changed file */
     let newInfo = change.file;
     let oldInfo = this.fileInfo[change.fileId];
-    this.storeFileInfo(newInfo);
+    await this.storeFileInfo(newInfo);
 
     if (this.noChange(newInfo, oldInfo)) {
       console.log("Same main info, ignoring");
@@ -261,6 +266,41 @@ class Sync {
   async addFileLocally(fileInfo) {
     await this.storeFileInfo(fileInfo);
     return await this.downloadFile(fileInfo);
+  }
+
+  async onLocalFileAdded(src) {
+    console.log("On local file added", src);
+
+    /* Create local file info */
+    let info = {
+      id: uuid(),
+      name: path.basename(src),
+      md5Checksum: await md5file(src),
+      parents: [await this.getParent(src)]
+    };
+
+    console.log("Local info", info);
+    let addRemotely = () => new Promise((resolve, reject) => {
+      this.drive.files.create({
+        resource: info,
+        media: {
+          body: fs.createReadStream(src)
+        }
+      }, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log("Result", result);
+        resolve(result);
+      });
+    });
+
+    await this.tryTwice(addRemotely);
+  }
+
+  async onLocalFileRemoved(src) {
+    console.log("onLocalFileRemoved not implemented");
   }
 
   async removeFileLocally(fileId) {
@@ -423,6 +463,16 @@ class Sync {
     return ret;
   }
 
+  async getParent(src) {
+    let dir = path.dirname(src);
+
+    if (!(dir in this.paths)) {
+      throw new Error("Unkown folder: ", dir);
+    }
+
+    return this.paths[dir];
+  }
+
   /* Rename / move files appropriately to new destinations */
   async changePaths(oldPaths, newPaths) {
     if (oldPaths.length == 0) {
@@ -523,7 +573,20 @@ class Sync {
   }
 
   async storeFileInfo(info) {
+    await this.computePaths(info);
     return this.fileInfo[info.id] = info;
+  }
+
+  async computePaths(info) {
+    if (info) {
+      for (let path of await this.getPaths(info)) {
+        this.paths[path] = info.id;
+      }
+    } else {
+      for (let info of Object.values(this.fileInfo)) {
+        this.computePaths(info);
+      }
+    }
   }
 
   async downloadFile(fileInfo) {
@@ -588,6 +651,11 @@ class Sync {
     }
   }
 
+  async initWatcher() {
+    this.watcher.on('add', path => this.onLocalFileAdded(path));
+    this.watcher.on('unlink', path => this.onLocalFileRemoved(path));
+  }
+
   /* Load in NeDB */
   async load() {
     /* No reason to load a saving file or reload the file */
@@ -609,6 +677,11 @@ class Sync {
         console.log("Nothing to load");
       }
       console.log("Loaded sync object! ");
+
+      //Compute paths
+      if (this.fileInfo) {
+        await this.computePaths();
+      }
 
       //Load changes that might have not gotten throughs
       await this.handleChanges();

@@ -272,6 +272,14 @@ class Sync {
   async onLocalFileAdded(src) {
     console.log("On local file added", src);
 
+    if (src in this.paths) {
+      let id = this.paths[id];
+      if (id in this.fileInfo) {
+        console.log("File already in drive's memory, updating instead");
+        return this.onLocalFileUpdated(src);
+      }
+    }
+
     /* In case parent is a folder and was just added as well, we need to wait for google's answer to have the parent's id */
     await this.finishAdding();
 
@@ -307,6 +315,11 @@ class Sync {
 
     await this.storeFileInfo(result);
     await this.save();
+  }
+
+  async onLocalFileUpdated(src) {
+    console.log("onLocalFileUpdated", src);
+    console.log("not implemented");
   }
 
   async onLocalFileRemoved(src) {
@@ -348,6 +361,14 @@ class Sync {
 
   async onLocalDirAdded(src) {
     console.log("onLocalDirAdded", src);
+
+    if (src in this.paths) {
+      let id = this.paths[id];
+      if (id in this.fileInfo && this.isFolder(this.fileInfo[id])) {
+        console.log("Folder already in drive's memory");
+        return;
+      }
+    }
 
     await this.finishAdding();
     this.adding = true;
@@ -697,10 +718,6 @@ class Sync {
       console.log("Ignoring file");
       return false;
     }
-    if (this.isFolder(fileInfo)) {
-      console.log("Doing nothing, it's a folder");
-      return false;
-    }
     await this.finishLoading();
 
     let savePaths = await this.getPaths(fileInfo);
@@ -708,6 +725,16 @@ class Sync {
     if (savePaths.length == 0) {
       return false;
     }
+
+    /* If folder, just create the folder locally */
+    if (this.isFolder(fileInfo)) {
+      for (let path of savePaths) {
+        this.watcher.ignore(path);
+        await mkdirp(path);
+      }
+      return true;
+    }
+
     let savePath = savePaths.shift();
 
     /* Create the folder for the file first */

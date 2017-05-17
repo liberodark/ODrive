@@ -1,11 +1,10 @@
 const assert = require('assert');
 const path = require("path");
-const uuid = require("uuid");
 const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
-const md5file = require('md5-file/promise');
+//const md5file = require('md5-file/promise');
 
 const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');

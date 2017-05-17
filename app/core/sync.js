@@ -273,19 +273,22 @@ class Sync {
 
     /* Create local file info */
     let info = {
-      id: uuid(),
+      //id: uuid(),
       name: path.basename(src),
-      md5Checksum: await md5file(src),
-      parents: [await this.getParent(src)]
+      //md5Checksum: await md5file(src),
+      parents: [await this.getParent(src)],
+      //mimeType: "image/jpeg"
     };
 
     console.log("Local info", info);
     let addRemotely = () => new Promise((resolve, reject) => {
+      console.log("creating...");
       this.drive.files.create({
         resource: info,
         media: {
           body: fs.createReadStream(src)
-        }
+        },
+        fields: fileInfoFields
       }, (err, result) => {
         if (err) {
           console.error(err);
@@ -296,7 +299,10 @@ class Sync {
       });
     });
 
-    await this.tryTwice(addRemotely);
+    let result = await this.tryTwice(addRemotely);
+
+    await this.storeFileInfo(result);
+    await this.save();
   }
 
   async onLocalFileRemoved(src) {
@@ -618,7 +624,7 @@ class Sync {
     console.log("Starting the actual download...");
 
     await this.tryTwice(() => new Promise((resolve, reject) => {
-      this.watcher.ignore(dest);
+      this.watcher.ignore(savePath);
       this.drive.files.get({fileId: fileInfo.id, alt: "media"})
         .on('end', () => resolve())
         .on('error', err => reject(err))

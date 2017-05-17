@@ -39,11 +39,11 @@ class LocalWatcher extends EventEmitter {
       });
   }
 
-  queue(path, event, stats) {
+  queue(path, event) {
     if (!this.ready) {
       return;
     }
-    console.log(path, event, stats);
+    console.log(path, event);
 
     this.addCache(path, event);
   }
@@ -61,7 +61,7 @@ class LocalWatcher extends EventEmitter {
   }
 
   addCache(path, event) {
-    if (! ("path" in this.cache)) {
+    if (! (path in this.cache)) {
       this.createCache(path);
     }
 

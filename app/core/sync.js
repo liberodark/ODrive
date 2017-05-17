@@ -4,7 +4,8 @@ const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
-const chokidar = require("chokidar");
+
+const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');
 
 const fileInfoFields = "id, name, mimeType, md5Checksum, size, modifiedTime, parents, trashed";
@@ -24,26 +25,8 @@ class Sync {
     this.changesToExecute = null;
     this.loaded = false;
     this.watchingChanges = false;
-    this.watcher = chokidar.watch(this.folder, {
-      //ignored: /(^|[\/\\])\../,
-      persistent: true
-    });
 
-    let log = console.log.bind(console);
-
-    this.watcher
-      .on('add', path => log(`File ${path} has been added`))
-      .on('change', path => log(`File ${path} has been changed`))
-      .on('unlink', path => log(`File ${path} has been removed`))
-      .on('addDir', path => log(`Directory ${path} has been added`))
-      .on('unlinkDir', path => log(`Directory ${path} has been removed`))
-      .on('error', error => log(`Watcher error: ${error}`))
-      .on('ready', () => log('Initial scan complete. Ready for changes'))
-      .on('raw', (event, path, details) => {
-        log('Raw event info:', event, path, details);
-      });
-
-
+    this.watcher = new LocalWatcher(this);
     /* Check if already in memory */
     this.load();
   }

@@ -21,6 +21,11 @@ async function getAccounts() {
     return accounts;
   }
 
+  if (globals.args && globals.args['clear']) {
+    await db.remove({ }, { multi: true });
+    await db.loadDatabase();
+  }
+
   let documents = await db.find({type: "account"});
   accounts = [];
 

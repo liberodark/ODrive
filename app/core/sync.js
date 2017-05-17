@@ -66,6 +66,7 @@ class Sync {
       notify("Getting files info...");
 
       let files = await this.downloadFolderStructure("root");
+      await this.computePaths();
 
       let counter = 0;
       let ignored = 0;
@@ -306,7 +307,34 @@ class Sync {
   }
 
   async onLocalFileRemoved(src) {
-    console.log("onLocalFileRemoved not implemented");
+    console.log("onLocalFileRemoved", src);
+
+    if (!(src in this.paths)) {
+      console.log(`Not existing in path architecture (${Object.keys(this.paths).length} paths)`);
+      //console.log(this.paths);
+      return;
+    }
+
+    let id = this.paths[src];
+
+    console.log("Local info", this.fileInfo[id]);
+
+    delete this.fileInfo[id];
+    await this.save();
+
+    let rmRemotely = () => new Promise((resolve, reject) => {
+      console.log("deleting...");
+      this.drive.files.delete({fileId: id}, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log("Result", result);
+        resolve(result);
+      });
+    });
+
+    await this.tryTwice(rmRemotely);
   }
 
   async removeFileLocally(fileId) {
@@ -382,6 +410,7 @@ class Sync {
       if (file.mimeType.includes("folder")) {
         res = res.concat(await this.downloadFolderStructure(file.id));
       }
+      await this.storeFileInfo(file);
     }
 
     return res;
@@ -448,7 +477,7 @@ class Sync {
   }
 
   async getPaths(fileInfo) {
-    console.log('Get path', fileInfo.name);
+    //console.log('Get path', fileInfo.name);
     if (fileInfo.id == this.rootId) {
       return [this.folder];
     }
@@ -585,13 +614,17 @@ class Sync {
 
   async computePaths(info) {
     if (info) {
+      console.log("Computing paths", info.id, info.name);
       for (let path of await this.getPaths(info)) {
+        console.log(path);
         this.paths[path] = info.id;
       }
     } else {
+      //console.log(this.fileInfo);
       for (let info of Object.values(this.fileInfo)) {
         this.computePaths(info);
       }
+      console.log("Paths computed", Object.keys(this.paths).length);
     }
   }
 
@@ -664,6 +697,7 @@ class Sync {
 
   /* Load in NeDB */
   async load() {
+    console.log("Beginning of loading sync object...");
     /* No reason to load a saving file or reload the file */
     if (this.loading || this.saving) {
       return await this.finishSaveOperation();
@@ -690,9 +724,8 @@ class Sync {
       }
 
       //Load changes that might have not gotten throughs
-      await this.handleChanges();
-
       this.loaded = true;
+      await this.handleChanges();
 
       if (obj && obj.synced) {
         this.watchChanges();

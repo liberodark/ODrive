@@ -61,7 +61,7 @@ class Account {
         https://developers.google.com/drive/v3/web/search-parameters
       */
       this.drive.about.get({q: "user.me == true", fields: "user"}, (err, about) => {
-        console.log("User info", about);
+        //console.log("User info", about);
 
         if (err) {
           return reject(err);

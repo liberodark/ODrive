@@ -1,20 +1,28 @@
 const path = require("path");
 /* Express stuff */
 const express = require('express');
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const isConnectionError = require('./modules/isconnectionerror');
+const commandLineArgs = require("command-line-args");
+
+const globals = require('../config/globals');
 
 /* Local stuff */
 const router = require('./routes/index');
 
 var app = express();
 
-const port = require('../config/globals').port;
+globals.args = commandLineArgs([
+  {name: "clear", type: Boolean}
+]);
+const port = globals.port;
 
 app.set('view engine', 'ejs');
 /* Needed because of packager, wouldn't find the views directory otherwise */
 app.set('views', path.join(__dirname, '../', 'views'));
 
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const config = require('../core/config');
 
 router.get('/', async (req, res) => {
+  console.log("Get home page");
   /* Redirect to options if there's at least one account */
   let accounts = await config.accounts();
 

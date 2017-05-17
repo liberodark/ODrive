@@ -252,7 +252,7 @@ class Sync {
   }
 
   noChange(oldInfo, newInfo) {
-    if (oldInfo.modifiedTime != newInfo.modifiedTime) {
+    if (oldInfo.modifiedTime >= newInfo.modifiedTime) {
       return false;
     }
     if (oldInfo.name != newInfo.name) {
@@ -335,6 +335,44 @@ class Sync {
     });
 
     await this.tryTwice(rmRemotely);
+  }
+
+  async onLocalDirAdded(src) {
+    console.log("onLocalDirAdded", src);
+
+    /* Create local file info */
+    let info = {
+      //id: uuid(),
+      name: path.basename(src),
+      //md5Checksum: await md5file(src),
+      parents: [await this.getParent(src)],
+      mimeType: "application/vnd.google-apps.folder"
+    };
+
+    console.log("Local info", info);
+    let addRemotely = () => new Promise((resolve, reject) => {
+      console.log("creating...");
+      this.drive.files.create({
+        resource: info,
+        fields: fileInfoFields
+      }, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log("Result", result);
+        resolve(result);
+      });
+    });
+
+    let result = await this.tryTwice(addRemotely);
+
+    await this.storeFileInfo(result);
+    await this.save();
+  }
+
+  async onLocalDirRemoved(src) {
+    console.log("onLocalDirRemoved", src);
   }
 
   async removeFileLocally(fileId) {
@@ -693,6 +731,8 @@ class Sync {
   async initWatcher() {
     this.watcher.on('add', path => this.onLocalFileAdded(path));
     this.watcher.on('unlink', path => this.onLocalFileRemoved(path));
+    this.watcher.on('addDir', path => this.onLocalDirAdded(path));
+    this.watcher.on('unlinkDir', path => this.onLocalDirRemoved(path));
   }
 
   /* Load in NeDB */

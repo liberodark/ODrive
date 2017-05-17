@@ -272,6 +272,9 @@ class Sync {
   async onLocalFileAdded(src) {
     console.log("On local file added", src);
 
+    /* In case parent is a folder and was just added as well, we need to wait for google's answer to have the parent's id */
+    await this.finishAdding();
+
     /* Create local file info */
     let info = {
       //id: uuid(),
@@ -337,38 +340,54 @@ class Sync {
     await this.tryTwice(rmRemotely);
   }
 
+  async finishAdding() {
+    while (this.adding) {
+      await delay(20);
+    }
+  }
+
   async onLocalDirAdded(src) {
     console.log("onLocalDirAdded", src);
 
-    /* Create local file info */
-    let info = {
-      //id: uuid(),
-      name: path.basename(src),
-      //md5Checksum: await md5file(src),
-      parents: [await this.getParent(src)],
-      mimeType: "application/vnd.google-apps.folder"
-    };
+    await this.finishAdding();
+    this.adding = true;
 
-    console.log("Local info", info);
-    let addRemotely = () => new Promise((resolve, reject) => {
-      console.log("creating...");
-      this.drive.files.create({
-        resource: info,
-        fields: fileInfoFields
-      }, (err, result) => {
-        if (err) {
-          console.error(err);
-          return reject(err);
-        }
-        console.log("Result", result);
-        resolve(result);
+    try {
+      /* Create local file info */
+      let info = {
+        //id: uuid(),
+        name: path.basename(src),
+        //md5Checksum: await md5file(src),
+        parents: [await this.getParent(src)],
+        mimeType: "application/vnd.google-apps.folder"
+      };
+
+      console.log("Local info", info);
+      let addRemotely = () => new Promise((resolve, reject) => {
+        console.log("creating...");
+        this.drive.files.create({
+          resource: info,
+          fields: fileInfoFields
+        }, (err, result) => {
+          if (err) {
+            console.error(err);
+            return reject(err);
+          }
+          console.log("Result", result);
+          resolve(result);
+        });
       });
-    });
 
-    let result = await this.tryTwice(addRemotely);
+      let result = await this.tryTwice(addRemotely);
 
-    await this.storeFileInfo(result);
-    await this.save();
+      await this.storeFileInfo(result);
+      await this.save();
+
+      this.adding = false;
+    } catch (err) {
+      this.adding = false;
+      throw err;
+    }
   }
 
   async onLocalDirRemoved(src) {

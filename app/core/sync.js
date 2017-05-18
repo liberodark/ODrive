@@ -252,7 +252,7 @@ class Sync {
   }
 
   noChange(oldInfo, newInfo) {
-    if (oldInfo.modifiedTime >= newInfo.modifiedTime) {
+    if (newInfo.modifiedTime > oldInfo.modifiedTime) {
       return false;
     }
     if (oldInfo.name != newInfo.name) {
@@ -384,8 +384,6 @@ class Sync {
     }
 
     await this.save();
-
-    console.log("not implemented");
   }
 
   async onLocalFileRemoved(src) {
@@ -846,18 +844,23 @@ class Sync {
   }
 
   async queue(fn) {
+    console.log("queuing function");
     this.queued.push(fn);
 
+    console.log("queue size", this.queued.length);
     //If queue is large, another loop is reading the queue
     if (this.queued.length > 1) {
+      console.log("Aborting");
       return;
     }
 
     while (this.queued.length > 0) {
       let f = this.queued[0];
+      console.log("Awaiting function end");
       await f();
       this.queued.shift();
     }
+    console.log("Queue end");
   }
 
   /* Load in NeDB */

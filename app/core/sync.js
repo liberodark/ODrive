@@ -4,7 +4,7 @@ const fs = require("fs-extra");
 const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
-//const md5file = require('md5-file/promise');
+const md5file = require('md5-file/promise');
 
 const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');
@@ -327,6 +327,64 @@ class Sync {
       return;
     }
 
+    if (! (src in this.paths)) {
+      console.log("Not in existing paths, adding it instead");
+      return this.onLocalFileAdded(src);
+    }
+
+    let id = this.paths[src];
+
+    if (!(id in this.fileInfo)) {
+      console.log("Not in existing file info structure, adding it instead");
+      return this.onLocalFileAdded(src);
+    }
+
+    let info = this.fileInfo[id];
+    if (this.shouldIgnoreFile(info)) {
+      console.log("Worthless file, ignoring");
+      return;
+    }
+
+    let computedmd5 = await md5file(src);
+    if (info.md5Checksum == computedmd5) {
+      console.log("No change in md5 sum, ignoring");
+      return;
+    }
+
+    info.md5Checksum = computedmd5;
+
+    let updateRemotely = () => new Promise((resolve, reject) => {
+      console.log("updating...");
+      this.drive.files.update({
+        fileId: id,
+        media: {
+          body: fs.createReadStream(src)
+        },
+        fields: fileInfoFields
+      }, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log("Result", result);
+        resolve(result);
+      });
+    });
+
+    let result = await this.tryTwice(updateRemotely);
+    await this.storeFileInfo(result);
+
+    /* Update aliases */
+    let paths = await this.getPaths(result);
+    for (let path of paths) {
+      if (path != src) {
+        this.watcher.ignore(path);
+        await fs.copy(src, path);
+      }
+    }
+
+    await this.save();
+
     console.log("not implemented");
   }
 
@@ -345,7 +403,9 @@ class Sync {
 
     if (id in this.fileInfo) {
       //Removes aliases
-      await this.removeFileLocally(id);
+      if (await this.removeFileLocally(id)) {
+        await this.save();
+      }
     } else {
       delete this.paths[src];
     }
@@ -782,6 +842,7 @@ class Sync {
     this.watcher.on('unlink', path => this.queue(() => this.onLocalFileRemoved(path)));
     this.watcher.on('addDir', path => this.queue(() => this.onLocalDirAdded(path)));
     this.watcher.on('unlinkDir', path => this.queue(() => this.onLocalDirRemoved(path)));
+    this.watcher.on('change', path => this.queue(() => this.onLocalFileUpdated(path)));
   }
 
   async queue(fn) {

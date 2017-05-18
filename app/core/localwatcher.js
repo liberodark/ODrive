@@ -34,7 +34,7 @@ class LocalWatcher extends EventEmitter {
       .on('addDir', path => this.queue(path, 'addDir'))
       .on('unlinkDir', path => this.queue(path, 'unlinkDir'))
       .on('error', error => log(`Watcher error: ${error}`))
-      .on('raw', (event, path, details) => {
+      .on('raw', (event, path, details) => { //eslint-disable-line no-unused-vars
         //log('Raw event info:', event, path, details);
       });
   }

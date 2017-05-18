@@ -21,6 +21,7 @@ class Sync {
     this.account = account;
     this.fileInfo = {};
     this.paths = {};
+    this.queued = [];
     this.rootId = null;
     this.synced = false;
     this.changeToken = null;
@@ -271,6 +272,11 @@ class Sync {
   async onLocalFileAdded(src) {
     console.log("On local file added", src);
 
+    if (!(await fs.exists(src))) {
+      console.log("Not present on file system");
+      return;
+    }
+
     if (src in this.paths) {
       let id = this.paths[id];
       if (id in this.fileInfo) {
@@ -278,9 +284,6 @@ class Sync {
         return this.onLocalFileUpdated(src);
       }
     }
-
-    /* In case parent is a folder and was just added as well, we need to wait for google's answer to have the parent's id */
-    await this.finishAdding();
 
     /* Create local file info */
     let info = {
@@ -318,6 +321,12 @@ class Sync {
 
   async onLocalFileUpdated(src) {
     console.log("onLocalFileUpdated", src);
+
+    if (!(await fs.exists(src))) {
+      console.log("Not present on file system");
+      return;
+    }
+
     console.log("not implemented");
   }
 
@@ -334,8 +343,12 @@ class Sync {
 
     console.log("Local info", this.fileInfo[id]);
 
-    delete this.fileInfo[id];
-    await this.save();
+    if (id in this.fileInfo) {
+      //Removes aliases
+      await this.removeFileLocally(id);
+    } else {
+      delete this.paths[src];
+    }
 
     let rmRemotely = () => new Promise((resolve, reject) => {
       console.log("deleting...");
@@ -352,12 +365,6 @@ class Sync {
     await this.tryTwice(rmRemotely);
   }
 
-  async finishAdding() {
-    while (this.adding) {
-      await delay(20);
-    }
-  }
-
   async onLocalDirAdded(src) {
     console.log("onLocalDirAdded", src);
 
@@ -369,45 +376,35 @@ class Sync {
       }
     }
 
-    await this.finishAdding();
-    this.adding = true;
+    /* Create local file info */
+    let info = {
+      //id: uuid(),
+      name: path.basename(src),
+      //md5Checksum: await md5file(src),
+      parents: [await this.getParent(src)],
+      mimeType: "application/vnd.google-apps.folder"
+    };
 
-    try {
-      /* Create local file info */
-      let info = {
-        //id: uuid(),
-        name: path.basename(src),
-        //md5Checksum: await md5file(src),
-        parents: [await this.getParent(src)],
-        mimeType: "application/vnd.google-apps.folder"
-      };
-
-      console.log("Local info", info);
-      let addRemotely = () => new Promise((resolve, reject) => {
-        console.log("creating...");
-        this.drive.files.create({
-          resource: info,
-          fields: fileInfoFields
-        }, (err, result) => {
-          if (err) {
-            console.error(err);
-            return reject(err);
-          }
-          console.log("Result", result);
-          resolve(result);
-        });
+    console.log("Local info", info);
+    let addRemotely = () => new Promise((resolve, reject) => {
+      console.log("creating...");
+      this.drive.files.create({
+        resource: info,
+        fields: fileInfoFields
+      }, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log("Result", result);
+        resolve(result);
       });
+    });
 
-      let result = await this.tryTwice(addRemotely);
+    let result = await this.tryTwice(addRemotely);
 
-      await this.storeFileInfo(result);
-      await this.save();
-
-      this.adding = false;
-    } catch (err) {
-      this.adding = false;
-      throw err;
-    }
+    await this.storeFileInfo(result);
+    await this.save();
   }
 
   async onLocalDirRemoved(src) {
@@ -430,6 +427,7 @@ class Sync {
     let paths = await this.getPaths(fileInfo);
 
     delete this.fileInfo[fileId];
+    paths.forEach(path => delete this.paths[path]);
 
     if (paths.length == 0) {
       return false;
@@ -780,10 +778,27 @@ class Sync {
   }
 
   async initWatcher() {
-    this.watcher.on('add', path => this.onLocalFileAdded(path));
-    this.watcher.on('unlink', path => this.onLocalFileRemoved(path));
-    this.watcher.on('addDir', path => this.onLocalDirAdded(path));
-    this.watcher.on('unlinkDir', path => this.onLocalDirRemoved(path));
+    //Queue system necessary because if a folder is added with files in it, the folder id is needed before uploading files, and it's gotten from google drive remotely
+    //A more clever system would be needed to be more efficient
+    this.watcher.on('add', path => this.queue(() => this.onLocalFileAdded(path)));
+    this.watcher.on('unlink', path => this.queue(() => this.onLocalFileRemoved(path)));
+    this.watcher.on('addDir', path => this.queue(() => this.onLocalDirAdded(path)));
+    this.watcher.on('unlinkDir', path => this.queue(() => this.onLocalDirRemoved(path)));
+  }
+
+  async queue(fn) {
+    this.queued.push(fn);
+
+    //If queue is large, another loop is reading the queue
+    if (this.queued.length > 1) {
+      return;
+    }
+
+    while (this.queued.length > 0) {
+      let f = this.queued[0];
+      await f();
+      this.queued.shift();
+    }
   }
 
   /* Load in NeDB */

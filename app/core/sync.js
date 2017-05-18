@@ -187,7 +187,7 @@ class Sync {
 
     /* Deleted file */
     if (change.removed || change.file.trashed) {
-      console.log("deleted file");
+      console.log("file removal");
       return await this.removeFileLocally(change.fileId);
     }
 
@@ -563,7 +563,7 @@ class Sync {
       return [this.folder];
     }
     if (!fileInfo.parents) {
-      console.log("File out of the main folder structure", fileInfo);
+      //console.log("File out of the main folder structure", fileInfo);
       return [];
     }
 
@@ -667,9 +667,7 @@ class Sync {
     If the file info is not present in cache or if forceUpdate is true,
     it seeks the information remotely and updates the cache as well. */
   async getFileInfo(fileId, forceUpdate) {
-    await this.finishLoading();
-
-    console.log("Getting individual file info: ", fileId);
+    //console.log("Getting individual file info: ", fileId);
     if (!forceUpdate && (fileId in this.fileInfo)) {
       return this.fileInfo[fileId];
     }
@@ -695,15 +693,15 @@ class Sync {
 
   async computePaths(info) {
     if (info) {
-      console.log("Computing paths", info.id, info.name);
+      //console.log("Computing paths", info.id, info.name);
       for (let path of await this.getPaths(info)) {
-        console.log(path);
+        //console.log(path);
         this.paths[path] = info.id;
       }
     } else {
-      //console.log(this.fileInfo);
+      console.log("Computing empty paths");
       for (let info of Object.values(this.fileInfo)) {
-        this.computePaths(info);
+        await this.computePaths(info);
       }
       console.log("Paths computed", Object.keys(this.paths).length);
     }

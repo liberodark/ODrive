@@ -1,3 +1,10 @@
+<p align="center">
+    <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/logo.jpg" width="500">    
+</p>
+<p align="center">
+  <b>Sync your files and folders simply</b>
+</p>
+
 # ODrive
 
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**

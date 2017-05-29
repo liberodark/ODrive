@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/logo.jpg" width="500">    
+    <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/public/logo.png" width="500">    
 </p>
 <p align="center">
   <b>Sync your files and folders simply</b>

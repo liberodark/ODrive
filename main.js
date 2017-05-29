@@ -10,6 +10,7 @@ function createWindow () {
   gbs.win = new BrowserWindow({
     width: 600,
     height: 250,
+    icon: "public/logo.png",
     webPreferences: {
       //nodeIntegration: false
     },

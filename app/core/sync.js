@@ -6,6 +6,7 @@ const delay = require("delay");
 const deepEqual = require("deep-equal");
 const md5file = require('md5-file/promise');
 
+const {log, verbose, debug, error} = require('../modules/logging')
 const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');
 
@@ -82,7 +83,7 @@ class Sync {
           continue;
         }
 
-        console.log("Downloading ", file);
+        log("Downloading ", file);
         counter +=1;
         await this.downloadFile(file);
         notify(`${counter} files downloaded, ${ignored} files ignored...`);
@@ -111,7 +112,7 @@ class Sync {
         if (err) {
           return reject(err);
         }
-        console.log("Start token for watching changes: ", res.startPageToken);
+        debug("Start token for watching changes: ", res.startPageToken);
 
         /* Make sure a parallel execution didn't get another token first. Once we've got a token, we stick with it */
         if (!this.changeToken) {
@@ -135,7 +136,7 @@ class Sync {
 
     try {
       if (!this.changeToken) {
-        console.error(new Error("Error in application flow, no valid change token"));
+        error(new Error("Error in application flow, no valid change token"));
         await this.startWatchingChanges();
       }
 
@@ -183,19 +184,19 @@ class Sync {
 
   async handleChange(change) {
     /* Todo */
-    console.log("Change", change);
+    verbose("Change", change);
 
     /* Deleted file */
     if (change.removed || change.file.trashed) {
-      console.log("file removal");
+      verbose("file removal");
       return await this.removeFileLocally(change.fileId);
     }
 
-    console.log(change.fileId, this.fileInfo[change.fileId]);
+    debug(change.fileId, this.fileInfo[change.fileId]);
 
     /* New file */
     if (!(change.fileId in this.fileInfo)) {
-      console.log("new file");
+      verbose("new file");
       return await this.addFileLocally(change.file);
     }
 
@@ -205,7 +206,7 @@ class Sync {
     await this.storeFileInfo(newInfo);
 
     if (this.noChange(newInfo, oldInfo)) {
-      console.log("Same main info, ignoring");
+      verbose("Same main info, ignoring");
       /* Nothing happened */
       return false;
     }
@@ -214,12 +215,12 @@ class Sync {
     let newPaths = await this.getPaths(newInfo);
 
     if (newPaths.length == 0 && oldPaths.length == 0) {
-      console.log("Not in main folder, ignoring");
+      verbose("Not in main folder, ignoring");
       return false;
     }
 
     if (newInfo.md5Checksum != oldInfo.md5Checksum) {
-      console.log("Different checksum, redownloading");
+      log("Different checksum, redownloading");
       /* Content changed, may as well delete it and redownload it */
       await this.removeFileLocally(oldInfo.id);
       await this.addFileLocally(newInfo);
@@ -229,12 +230,12 @@ class Sync {
 
     /* Changed Paths */
     if (oldPaths.length == 0) {
-      console.log("Wasn't in main folder, downloading");
+      log("Wasn't in main folder, downloading");
       return await this.addFileLocally(newInfo);
     }
 
     if (this.shouldIgnoreFile(newInfo)) {
-      console.log("Ignoring file, content worthless");
+      verbose("Ignoring file, content worthless");
       return false;
     }
 
@@ -242,11 +243,11 @@ class Sync {
     newPaths.sort();
 
     if (deepEqual(oldPaths, newPaths)) {
-      console.log("Same file names, ignoring");
+      verbose("Same file names, ignoring");
       return false;
     }
 
-    console.log("Moving files");
+    log("Moving files");
     await this.changePaths(oldPaths, newPaths);
     return true;
   }
@@ -270,17 +271,17 @@ class Sync {
   }
 
   async onLocalFileAdded(src) {
-    console.log("On local file added", src);
+    debug("On local file added", src);
 
     if (!(await fs.exists(src))) {
-      console.log("Not present on file system");
+      debug("Not present on file system");
       return;
     }
 
     if (src in this.paths) {
       let id = this.paths[id];
       if (id in this.fileInfo) {
-        console.log("File already in drive's memory, updating instead");
+        debug("File already in drive's memory, updating instead");
         return this.onLocalFileUpdated(src);
       }
     }
@@ -294,9 +295,9 @@ class Sync {
       //mimeType: "image/jpeg"
     };
 
-    console.log("Local info", info);
+    verbose("Local info", info);
     let addRemotely = () => new Promise((resolve, reject) => {
-      console.log("creating...");
+      log("Adding new file to remote drive.");
       this.drive.files.create({
         resource: info,
         media: {
@@ -305,10 +306,10 @@ class Sync {
         fields: fileInfoFields
       }, (err, result) => {
         if (err) {
-          console.error(err);
+          error(err);
           return reject(err);
         }
-        console.log("Result", result);
+        verbose("Result", result);
         resolve(result);
       });
     });
@@ -320,41 +321,41 @@ class Sync {
   }
 
   async onLocalFileUpdated(src) {
-    console.log("onLocalFileUpdated", src);
+    debug("onLocalFileUpdated", src);
 
     if (!(await fs.exists(src))) {
-      console.log("Not present on file system");
+      debug("Not present on file system");
       return;
     }
 
     if (! (src in this.paths)) {
-      console.log("Not in existing paths, adding it instead");
+      debug("Not in existing paths, adding it instead");
       return this.onLocalFileAdded(src);
     }
 
     let id = this.paths[src];
 
     if (!(id in this.fileInfo)) {
-      console.log("Not in existing file info structure, adding it instead");
+      debug("Not in existing file info structure, adding it instead");
       return this.onLocalFileAdded(src);
     }
 
     let info = this.fileInfo[id];
     if (this.shouldIgnoreFile(info)) {
-      console.log("Worthless file, ignoring");
+      debug("Worthless file, ignoring");
       return;
     }
 
     let computedmd5 = await md5file(src);
     if (info.md5Checksum == computedmd5) {
-      console.log("No change in md5 sum, ignoring");
+      debug("No change in md5 sum, ignoring");
       return;
     }
 
     info.md5Checksum = computedmd5;
 
     let updateRemotely = () => new Promise((resolve, reject) => {
-      console.log("updating...");
+      log("Updating file to drive.");
       this.drive.files.update({
         fileId: id,
         media: {
@@ -363,10 +364,10 @@ class Sync {
         fields: fileInfoFields
       }, (err, result) => {
         if (err) {
-          console.error(err);
+          error(err);
           return reject(err);
         }
-        console.log("Result", result);
+        verbose("Result", result);
         resolve(result);
       });
     });
@@ -387,17 +388,17 @@ class Sync {
   }
 
   async onLocalFileRemoved(src) {
-    console.log("onLocalFileRemoved", src);
+    verbose("onLocalFileRemoved", src);
 
     if (!(src in this.paths)) {
-      console.log(`Not existing in path architecture (${Object.keys(this.paths).length} paths)`);
-      //console.log(this.paths);
+      debug(`Not existing in path architecture (${Object.keys(this.paths).length} paths)`);
+      //log(this.paths);
       return;
     }
 
     let id = this.paths[src];
 
-    console.log("Local info", this.fileInfo[id]);
+    verbose("Local info", this.fileInfo[id]);
 
     if (id in this.fileInfo) {
       //Removes aliases
@@ -409,13 +410,13 @@ class Sync {
     }
 
     let rmRemotely = () => new Promise((resolve, reject) => {
-      console.log("deleting...");
+      log("Deleting file on drive.");
       this.drive.files.delete({fileId: id}, (err, result) => {
         if (err) {
-          console.error(err);
+          error(err);
           return reject(err);
         }
-        console.log("Result", result);
+        verbose("Result", result);
         resolve(result);
       });
     });
@@ -424,12 +425,12 @@ class Sync {
   }
 
   async onLocalDirAdded(src) {
-    console.log("onLocalDirAdded", src);
+    verbose("onLocalDirAdded", src);
 
     if (src in this.paths) {
       let id = this.paths[id];
       if (id in this.fileInfo && this.isFolder(this.fileInfo[id])) {
-        console.log("Folder already in drive's memory");
+        debug("Folder already in drive's memory");
         return;
       }
     }
@@ -443,18 +444,18 @@ class Sync {
       mimeType: "application/vnd.google-apps.folder"
     };
 
-    console.log("Local info", info);
+    verbose("Local info", info);
     let addRemotely = () => new Promise((resolve, reject) => {
-      console.log("creating...");
+      log("Adding directory to drive.");
       this.drive.files.create({
         resource: info,
         fields: fileInfoFields
       }, (err, result) => {
         if (err) {
-          console.error(err);
+          error(err);
           return reject(err);
         }
-        console.log("Result", result);
+        log("Result", result);
         resolve(result);
       });
     });
@@ -467,17 +468,17 @@ class Sync {
 
   async onLocalDirRemoved(src) {
     if (src == this.folder) {
-      console.error("Google drive folder removed?!?!?!?");
+      error("Google drive folder removed?!?!?!?");
       process.exit(1);
     }
-    console.log("onLocalDirRemoved", src);
+    verbose("onLocalDirRemoved", src);
 
     this.onLocalFileRemoved(src);
   }
 
   async removeFileLocally(fileId) {
     if (!(fileId in this.fileInfo)) {
-      console.error("Impossible to remove unknown file id ", fileId);
+      debug("Unknown file id asked to be removed", fileId);
       return false;
     }
 
@@ -541,7 +542,7 @@ class Sync {
     /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
     await delay(110);
 
-    console.log("Downloading folder structure for ", folder);
+    verbose("Downloading folder structure for ", folder);
     let files = await this.folderContents(folder);
 
     let res = [].concat(files);//clone to a different array
@@ -562,8 +563,8 @@ class Sync {
 
     let {nextPageToken, files} = await this.filesListChunk({folder,q});
 
-    console.log(files, nextPageToken);
-    console.log("(Chunk 1)");
+    debug(files, nextPageToken);
+    debug("(Chunk 1)");
 
     let counter = 1;
     while(nextPageToken) {
@@ -575,11 +576,11 @@ class Sync {
       files = files.concat(data.files);
 
       counter += 1;
-      console.log(data);
-      console.log(`(Chunk ${counter})`, nextPageToken);
+      debug(data);
+      debug(`(Chunk ${counter})`, nextPageToken);
     }
 
-    console.log("Files list done!");
+    log("Files list done!");
 
     return files;
   }
@@ -602,7 +603,7 @@ class Sync {
       if (pageToken) {
         args.pageToken = pageToken;
       }
-      console.log("Getting files chunk", args);
+      debug("Getting files chunk", args);
       this.drive.files.list(args, (err, result) => {
         if (err) {
           return reject(err);
@@ -616,12 +617,12 @@ class Sync {
   }
 
   async getPaths(fileInfo) {
-    //console.log('Get path', fileInfo.name);
+    //log('Get path', fileInfo.name);
     if (fileInfo.id == this.rootId) {
       return [this.folder];
     }
     if (!fileInfo.parents) {
-      //console.log("File out of the main folder structure", fileInfo);
+      //log("File out of the main folder structure", fileInfo);
       return [];
     }
 
@@ -650,7 +651,7 @@ class Sync {
   /* Rename / move files appropriately to new destinations */
   async changePaths(oldPaths, newPaths) {
     if (oldPaths.length == 0) {
-      console.log("Can't change path, past path is empty");
+      debug("Can't change path, past path is empty");
       return;
     }
 
@@ -714,7 +715,7 @@ class Sync {
       }
     }
 
-    console.error("Connection error received, waiting 2 seconds and retrying");
+    error("Connection error received, waiting 2 seconds and retrying");
     await delay(2000);
 
     return await fn();
@@ -725,7 +726,7 @@ class Sync {
     If the file info is not present in cache or if forceUpdate is true,
     it seeks the information remotely and updates the cache as well. */
   async getFileInfo(fileId, forceUpdate) {
-    //console.log("Getting individual file info: ", fileId);
+    //log("Getting individual file info: ", fileId);
     if (!forceUpdate && (fileId in this.fileInfo)) {
       return this.fileInfo[fileId];
     }
@@ -751,24 +752,24 @@ class Sync {
 
   async computePaths(info) {
     if (info) {
-      //console.log("Computing paths", info.id, info.name);
+      //log("Computing paths", info.id, info.name);
       for (let path of await this.getPaths(info)) {
-        //console.log(path);
+        //log(path);
         this.paths[path] = info.id;
       }
     } else {
-      console.log("Computing empty paths");
+      debug("Computing empty paths");
       for (let info of Object.values(this.fileInfo)) {
         await this.computePaths(info);
       }
-      console.log("Paths computed", Object.keys(this.paths).length);
+      debug("Paths computed", Object.keys(this.paths).length);
     }
   }
 
   async downloadFile(fileInfo) {
-    console.log("Downlading file", fileInfo.name);
+    verbose("Downlading file", fileInfo.name);
     if (this.shouldIgnoreFile(fileInfo)) {
-      console.log("Ignoring file");
+      verbose("Ignoring file");
       return false;
     }
     await this.finishLoading();
@@ -797,7 +798,7 @@ class Sync {
 
     await delay(80);
 
-    console.log("Starting the actual download...");
+    verbose("Starting the actual download...");
 
     await this.tryTwice(() => new Promise((resolve, reject) => {
       this.watcher.ignore(savePath);
@@ -810,10 +811,10 @@ class Sync {
       await fs.remove(dest);
       throw err;
     }));
-    console.log("Download ended!");
+    log(`Downloaded ${fileInfo.name}!`);
 
     for (let otherPath of savePaths) {
-      console.log("copying file to folder ", otherPath);
+      verbose("Copying file to folder ", otherPath);
       this.watcher.ignore(otherPath);
       await fs.copy(savePath, otherPath);
     }
@@ -844,28 +845,28 @@ class Sync {
   }
 
   async queue(fn) {
-    console.log("queuing function");
+    debug("queuing function");
     this.queued.push(fn);
 
-    console.log("queue size", this.queued.length);
+    debug("queue size", this.queued.length);
     //If queue is large, another loop is reading the queue
     if (this.queued.length > 1) {
-      console.log("Aborting");
+      debug("Aborting");
       return;
     }
 
     while (this.queued.length > 0) {
       let f = this.queued[0];
-      console.log("Awaiting function end");
+      debug("Awaiting function end");
       await f();
       this.queued.shift();
     }
-    console.log("Queue end");
+    debug("Queue end");
   }
 
   /* Load in NeDB */
   async load() {
-    console.log("Beginning of loading sync object...");
+    verbose("Beginning of loading sync object...");
     /* No reason to load a saving file or reload the file */
     if (this.loading || this.saving) {
       return await this.finishSaveOperation();
@@ -873,7 +874,7 @@ class Sync {
     this.loading = true;
 
     try {
-      console.log("Loading sync object");
+      verbose("Loading sync object");
       let obj = await globals.db.findOne({type: "sync", accountId: this.account.id});
 
       if (obj) {
@@ -882,9 +883,9 @@ class Sync {
         }
         this.id = obj._id;
       } else {
-        console.log("Nothing to load");
+        verbose("Nothing to load");
       }
-      console.log("Loaded sync object! ");
+      verbose("Loaded sync object! ");
 
       //Compute paths
       if (this.fileInfo) {
@@ -907,7 +908,7 @@ class Sync {
 
   /* Save in NeDB, overwriting previous entry */
   async save() {
-    console.log("Saving sync object");
+    verbose("Saving sync object");
     await this.finishLoading();
 
     if (this.loading || this.saving) {
@@ -935,7 +936,7 @@ class Sync {
 
       await globals.db.update({_id: this.id}, saveObject, {});
       this.savedTime = Date.now();
-      console.log("Saved new synchronization changes!");
+      verbose("Saved new synchronization changes!");
 
       this.watchChanges();
       this.saving = false;

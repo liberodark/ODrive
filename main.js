@@ -1,6 +1,9 @@
-const gbs = require('./config/globals');
-const {app, BrowserWindow} = require('electron');
+const {app, BrowserWindow, Tray, Menu} = require('electron');
 const url = require('url');
+const path = require('path');
+
+const gbs = require('./config/globals');
+const config = require('./app/core/config');
 
 //Actual backend
 const backend = require('./app/backend');
@@ -37,20 +40,53 @@ function createWindow () {
   });
 }
 
+function generateTray() {
+  gbs.tray = new Tray('/home/coyotte508/logo.png');
+  //gbs.tray = new Tray('public/logo.png');
+  gbs.trayMenu = Menu.buildFromTemplate([
+    {
+      label: 'Preferences...',
+      click () {
+        if (gbs.win === null) {
+          createWindow();
+        }
+      }
+    },
+    {type: 'separator'},
+    {
+      label: 'Quit ODrive',
+      click () {process.exit(0)}
+    }
+  ]);
+  //gbs.tray.setToolTip('This is my application.')
+  gbs.tray.setContextMenu(gbs.trayMenu);
+}
+
+async function launch() {
+  generateTray();
+
+  /* Only display settings on launch if no account already set up */
+  let accounts = await config.accounts();
+  if (accounts.length == 0) {
+    createWindow();
+  }
+}
+
 app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', launch);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   // if (process.platform !== 'darwin') {
-     app.quit();
+  // app.quit();
   // }
+  /* To quit, need to quit on the tray icon */
 });
 
 app.on('activate', () => {

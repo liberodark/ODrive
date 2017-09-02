@@ -8,7 +8,9 @@ router.get('/settings', async (req, res) => {
   let accounts = await config.accounts();
 
   res.render('settings', {accounts});
-  gbs.win.setSize(600,Math.min(360+80*accounts.length, 500));
+
+  /* Hack to set frontend to proper height */
+  gbs.win.setSize(600, 270+80*Math.max(accounts.length,0.5));
 });
 
 router.get('/connect', (req, res) => {

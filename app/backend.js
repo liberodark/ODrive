@@ -7,6 +7,7 @@ const isConnectionError = require('./modules/isconnectionerror');
 const commandLineArgs = require("command-line-args");
 
 const globals = require('../config/globals');
+const core = require('./core');
 
 /* Local stuff */
 const router = require('./routes/index');
@@ -50,6 +51,10 @@ async function listen() {
   }
 }
 
+async function launch() {
+  await core.launch();
+}
+
 listen();
 
 /* Handle error */
@@ -82,5 +87,6 @@ process.on('uncaughtException', error => {
 });
 
 module.exports = {
-  port
+  port,
+  launch
 };

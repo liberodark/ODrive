@@ -1,6 +1,8 @@
 const path = require('path');
 const os = require('os');
 const google = require('googleapis');
+const observable = require('riot-observable');
+
 const Sync = require('./sync');
 const globals = require('../../config/globals');
 const OAuth2 = google.auth.OAuth2;
@@ -9,6 +11,7 @@ const toSave = ["email", "about", "tokens"];
 
 class Account {
   constructor(doc) {
+    observable(this);
     if (doc) {
       this.load(doc);
     }
@@ -125,8 +128,13 @@ class Account {
       auth: this.oauth
     });
     this.sync = new Sync(this);
+    this.watchChanges(this.sync);
 
     return this.updateUserInfo();
+  }
+
+  watchChanges(syncObject) {
+    syncObject.on('filesChanged', (changes) => this.trigger("filesChanged", changes));
   }
 }
 

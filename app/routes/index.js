@@ -1,10 +1,10 @@
 const router = require("express").Router();
-const config = require('../core/config');
+const core = require('../core');
 
 router.get('/', async (req, res) => {
   console.log("Get home page");
   /* Redirect to options if there's at least one account */
-  let accounts = await config.accounts();
+  let accounts = await core.accounts();
 
   console.log("Number of accounts", accounts.length);
 

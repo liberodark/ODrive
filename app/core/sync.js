@@ -5,6 +5,7 @@ const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
 const md5file = require('md5-file/promise');
+const observable = require('riot-observable');
 
 const {log, verbose, debug, error} = require('../modules/logging')
 const LocalWatcher = require('./localwatcher');
@@ -19,9 +20,12 @@ const toSave = ["changeToken", "fileInfo", "synced", "rootId", "changesToExecute
 
 class Sync {
   constructor(account) {
+    observable(this);
+
     this.account = account;
     this.fileInfo = {};
     this.paths = {};
+    this.lastChanges = {};
     this.queued = [];
     this.rootId = null;
     this.synced = false;
@@ -176,6 +180,9 @@ class Sync {
       }
     }
 
+    /* Notify user of changes */
+    this.notifyChanges();
+
     /* Save regularly if there are changes, even if they're worthless. At least it updates the change token. */
     if ( (Date.now() - this.savedTime) > 30000 && initialCount > 0) {
       await this.save();
@@ -189,7 +196,7 @@ class Sync {
     /* Deleted file */
     if (change.removed || change.file.trashed) {
       verbose("file removal");
-      return await this.removeFileLocally(change.fileId);
+      return this.logChange("removed", await this.removeFileLocally(change.fileId));
     }
 
     debug(change.fileId, this.fileInfo[change.fileId]);
@@ -197,7 +204,7 @@ class Sync {
     /* New file */
     if (!(change.fileId in this.fileInfo)) {
       verbose("new file");
-      return await this.addFileLocally(change.file);
+      return this.logChange("added", await this.addFileLocally(change.file));
     }
 
     /* Changed file */
@@ -225,13 +232,15 @@ class Sync {
       await this.removeFileLocally(oldInfo.id);
       await this.addFileLocally(newInfo);
 
+      this.logChange("updated", true);
+
       return true;
     }
 
     /* Changed Paths */
     if (oldPaths.length == 0) {
       log("Wasn't in main folder, downloading");
-      return await this.addFileLocally(newInfo);
+      return this.logChange("added", this.addFileLocally(newInfo));
     }
 
     if (this.shouldIgnoreFile(newInfo)) {
@@ -252,6 +261,23 @@ class Sync {
     return true;
   }
 
+  async notifyChanges() {
+    if (!deepEqual({}, this.lastChanges)) {
+      this.trigger("filesChanged", this.lastChanges);
+      this.lastChanges = {};
+    }
+  }
+
+  /* Log a change, if it happened, and return if it happened or not */
+  logChange(type, yesOrNo) {
+    if (yesOrNo) {
+      this.lastChanges[type] = this.lastChanges[type] || 0;
+      this.lastChanges[type] += 1;
+      console.log("Last changes updated:", this.lastChanges);
+    }
+    return yesOrNo;
+  }
+
   noChange(oldInfo, newInfo) {
     if (newInfo.modifiedTime > oldInfo.modifiedTime) {
       return false;
@@ -267,7 +293,12 @@ class Sync {
 
   async addFileLocally(fileInfo) {
     await this.storeFileInfo(fileInfo);
-    return await this.downloadFile(fileInfo);
+    let res = await this.downloadFile(fileInfo);
+
+    if (res) {
+      this.logChange({type:"added", number: 1});
+    }
+    return res;
   }
 
   async onLocalFileAdded(src) {
@@ -499,6 +530,10 @@ class Sync {
         await fs.remove(path);
         removed = true;
       }
+    }
+
+    if (removed) {
+      console.log("removed file locally");
     }
 
     return removed;

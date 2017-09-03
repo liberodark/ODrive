@@ -1,9 +1,10 @@
 const {app, BrowserWindow, Tray, Menu} = require('electron');
 const url = require('url');
 const path = require('path');
+const notifier = require('node-notifier');
 
 const gbs = require('./config/globals');
-const config = require('./app/core/config');
+const core = require('./app/core');
 
 //Actual backend
 const backend = require('./app/backend');
@@ -64,12 +65,20 @@ function generateTray() {
 
 async function launch() {
   generateTray();
+  await backend.launch();
 
   /* Only display settings on launch if no account already set up */
-  let accounts = await config.accounts();
+  let accounts = await core.accounts();
   if (accounts.length == 0) {
     createWindow();
   }
+
+  core.on("notification", (text) => {
+    notifier.notify({
+      title: "ODrive",
+      message: text
+    });
+  });
 }
 
 app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);

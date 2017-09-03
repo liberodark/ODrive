@@ -1,7 +1,7 @@
 const Account = require('../core/account');
 const router = require("express").Router();
 const gbs = require('../../config/globals');
-const config = require('../core/config');
+const core = require('../core');
 const ipc = require('electron').ipcMain;
 
 router.get('/settings', async (req, res) => {
@@ -29,7 +29,7 @@ router.get('/authCallback', async (req, res, next) => {
     let account = new Account();
 
     await account.handleCode(code);
-    config.addAccount(account);
+    core.addAccount(account);
 
     res.redirect("/settings");
   } catch(err) {

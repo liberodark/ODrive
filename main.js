@@ -42,7 +42,7 @@ function createWindow () {
 }
 
 function generateTray() {
-  gbs.tray = new Tray('/home/coyotte508/logo.png');
+  gbs.tray = new Tray('public/logo.png');
   //gbs.tray = new Tray('public/logo.png');
   gbs.trayMenu = Menu.buildFromTemplate([
     {

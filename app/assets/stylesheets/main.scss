@@ -32,6 +32,6 @@ body {
   }
 
   #synchronize-status {
-    @extend .form-control-static;
+    @extend .form-control-plaintext;
   }
 }

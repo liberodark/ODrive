@@ -5,7 +5,7 @@ const core = require('../core');
 const ipc = require('electron').ipcMain;
 
 router.get('/settings', async (req, res) => {
-  let accounts = await config.accounts();
+  let accounts = await core.accounts();
 
   res.render('settings', {accounts});
 
@@ -39,7 +39,7 @@ router.get('/authCallback', async (req, res, next) => {
 
 ipc.on('start-sync', async ({sender}, {accountId}) => {
   try {
-    let account = await config.accountById(accountId);
+    let account = await core.accountById(accountId);
     await account.sync.start(update => sender.send("sync-update", {accountId, update}));
     sender.send('sync-end');
   } catch (err) {

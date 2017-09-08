@@ -1,6 +1,5 @@
 const {app, BrowserWindow, Tray, Menu} = require('electron');
 const url = require('url');
-const path = require('path');
 const notifier = require('node-notifier');
 
 const gbs = require('./config/globals');
@@ -56,7 +55,7 @@ function generateTray() {
     {type: 'separator'},
     {
       label: 'Quit ODrive',
-      click () {process.exit(0)}
+      click () {process.exit(0);}
     }
   ]);
   //gbs.tray.setToolTip('This is my application.')

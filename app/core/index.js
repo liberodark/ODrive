@@ -86,7 +86,7 @@ class Core {
   launch() {
 
   }
-};
+}
 
 let coreObject = new Core();
 

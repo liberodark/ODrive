@@ -7,7 +7,7 @@ const deepEqual = require("deep-equal");
 const md5file = require('md5-file/promise');
 const observable = require('riot-observable');
 
-const {log, verbose, debug, error} = require('../modules/logging')
+const {log, verbose, debug, error} = require('../modules/logging');
 const LocalWatcher = require('./localwatcher');
 const globals = require('../../config/globals');
 

@@ -459,7 +459,7 @@ class Sync {
     verbose("onLocalDirAdded", src);
 
     if (src in this.paths) {
-      let id = this.paths[id];
+      let id = this.paths[src];
       if (id in this.fileInfo && this.isFolder(this.fileInfo[id])) {
         debug("Folder already in drive's memory");
         return;

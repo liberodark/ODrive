@@ -39,7 +39,7 @@ router.get('/authCallback', async (req, res, next) => {
 
 ipc.on('start-sync', async ({sender}, {accountId}) => {
   try {
-    let account = await core.accountById(accountId);
+    let account = await core.getAccountById(accountId);
     await account.sync.start(update => sender.send("sync-update", {accountId, update}));
     sender.send('sync-end');
   } catch (err) {

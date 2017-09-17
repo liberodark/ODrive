@@ -5,7 +5,7 @@ const mkdirp = require("mkdirp-promise");
 const delay = require("delay");
 const deepEqual = require("deep-equal");
 const md5file = require('md5-file/promise');
-const observable = require('riot-observable');
+const EventEmitter = require('events');
 
 const {log, verbose, debug, error} = require('../modules/logging');
 const LocalWatcher = require('./localwatcher');
@@ -18,9 +18,9 @@ const changesListFields = `nextPageToken, newStartPageToken, changes(${changeInf
 
 const toSave = ["changeToken", "fileInfo", "synced", "rootId", "changesToExecute"];
 
-class Sync {
+class Sync extends EventEmitter {
   constructor(account) {
-    observable(this);
+    super();
 
     this.account = account;
     this.fileInfo = {};
@@ -263,7 +263,7 @@ class Sync {
 
   async notifyChanges() {
     if (!deepEqual({}, this.lastChanges)) {
-      this.trigger("filesChanged", this.lastChanges);
+      this.emit("filesChanged", this.lastChanges);
       this.lastChanges = {};
     }
   }

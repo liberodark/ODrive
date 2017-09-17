@@ -26,7 +26,6 @@
     "morgan": "^1.8.1",
     "nedb-promise": "^2.0.1",
     "node-notifier": "^5.1.2",
-    "riot-observable": "^3.0.0",
     "sass-loader": "^6.0.3",
     "tether": "^1.4.0"
   },

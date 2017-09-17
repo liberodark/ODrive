@@ -1,6 +1,6 @@
 const os = require('os');
 const path = require('path');
-const observable = require("riot-observable");
+const EventEmitter = require('events');
 
 const Account = require('./account');
 const DataStore = require('nedb-promise');
@@ -17,9 +17,9 @@ globals.db = db;
 //Autocompaction, since nedb-promise doesn't let us access it immediately
 setInterval(() => db.loadDatabase(), 30000);
 
-class Core {
+class Core extends EventEmitter {
   constructor() {
-    observable(this);
+    super();
   }
 
   async accounts() {
@@ -80,7 +80,7 @@ class Core {
     let fullText = arr.join(', ') + ".";
 
     console.log("notification", fullText);
-    this.trigger("notification", fullText);
+    this.emit("notification", fullText);
   }
 
   launch() {

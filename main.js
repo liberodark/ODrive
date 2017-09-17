@@ -42,7 +42,7 @@ function createWindow () {
 
 function generateTray() {
   gbs.tray = new Tray('public/logo.png');
-  //gbs.tray = new Tray('public/logo.png');
+
   gbs.trayMenu = Menu.buildFromTemplate([
     {
       label: 'Preferences...',
@@ -78,6 +78,17 @@ async function launch() {
       message: text
     });
   });
+
+  //In case of connection error before even watching for it
+  updateTrayIcon();
+  gbs.on("connectivity", () => {
+    updateTrayIcon();
+  });
+}
+
+function updateTrayIcon() {
+  let path = gbs.connected ? 'public/logo.png' : 'public/logo-grey.png';
+  gbs.tray.setImage(path);
 }
 
 app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);

@@ -568,6 +568,9 @@ class Sync {
       }
     }
 
+    //update connectivity here
+    globals.updateConnectivity(true);
+
     return changes;
   }
 

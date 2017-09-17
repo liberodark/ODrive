@@ -60,10 +60,12 @@ listen();
 /* Handle error */
 process.on('unhandledRejection', async (error) => {
   // Will print "unhandledRejection err is not defined"
-  console.error('Unhandled rejection');
-  console.error(error);
+  console.error('Unhandled rejection', error.errno);
+  //console.error(error);
 
   if (isConnectionError(error)) {
+    globals.updateConnectivity(false);
+
     if (error.syncObject && error.watcher) {
       console.log("Connection error when watching changes, restarting in 10 seconds");
       setTimeout(() => error.syncObject.load(), 10000);
@@ -72,13 +74,17 @@ process.on('unhandledRejection', async (error) => {
 });
 
 process.on('uncaughtException', error => {
-  console.error('Uncaught exception', error);
+  console.error('Uncaught exception', error.errno);
+  //console.error(error);
+
   if(error.errno === 'EADDRINUSE') {
     console.error('Make sure that another instance of OpenDrive is not running.');
     return process.exit(1);
   }
 
   if (isConnectionError(error)) {
+    globals.updateConnectivity(false);
+
     if (error.syncObject && error.watcher) {
       console.log("Connection error when watching changes, restarting in 10 seconds");
       setTimeout(() => error.syncObject.load(), 10000);

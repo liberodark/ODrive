@@ -26,6 +26,7 @@
     "morgan": "^1.8.1",
     "nedb-promise": "^2.0.1",
     "node-notifier": "^5.1.2",
+    "popper.js": "^1.12.5",
     "sass-loader": "^6.0.3",
     "tether": "^1.4.0"
   },

@@ -37,16 +37,28 @@ router.get('/authCallback', async (req, res, next) => {
   }
 });
 
-ipc.on('start-sync', async ({sender}, {accountId}) => {
+ipc.on('start-sync', async ({/*sender*/}, {accountId, folder}) => {
+  /* Shortcut to web IPC. Does not use 'sender' as it can be closed and reopened */
+  let web = () => {
+    if (gbs.win) {
+      return gbs.win.webContents;
+    } else {
+      return {send: ()=>{}}
+    }
+  };
+
   try {
     let account = await core.getAccountById(accountId);
-    await account.sync.start(update => sender.send("sync-update", {accountId, update}));
-    sender.send('sync-end');
+    account.folder = folder;
+    await account.save();
+    await account.sync.start(update => web().send("sync-update", {accountId, update}));
+    ipc.send('sync-end');
   } catch (err) {
     console.error(err);
-    sender.send('error', err.message);
+
+    web().send('error', err.message);
     /* If synchronization didn't go through to the end, we enable the user to do it again */
-    sender.send('sync-enable');
+    web().send('sync-enable', err.message);
   }
 });
 

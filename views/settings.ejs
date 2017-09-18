@@ -2,7 +2,7 @@
 let simplifiedAccounts = [];
 
 for (let account of accounts) {
-  simplifiedAccounts.push({id: account.id});
+  simplifiedAccounts.push({id: account.id, folder: account.folder});
 }
 %>
 
@@ -52,8 +52,8 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
 
   <div>
     <label class="custom-file">
-      <input type="file" id="file" class="custom-file-input" directory webkitdirectory>
-      <span class="custom-file-control folder"></span>
+      <input type="file" id="file" class="custom-file-input" onchange="handleUIChangeFolder(accounts[0])" directory webkitdirectory <% if (accounts.length == 0 || accounts[0].running) {%>disabled<%}%>>
+      <span class="custom-file-control folder" id="filePath"><%- (accounts[0]||{folder:"Choose folder..."}).folder %></span>
     </label>
   </div>
 </section>
@@ -67,5 +67,9 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
   </div>
 </section>
 
-
+<script>
+  <% if (accounts[0] && accounts[0].sync.syncing) {%>
+    UIBeginSyncing();
+  <% } %>
+</script>
 </body>

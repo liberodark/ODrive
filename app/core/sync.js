@@ -832,24 +832,30 @@ class Sync extends EventEmitter {
     /* Create the folder for the file first */
     await mkdirp(path.dirname(savePath));
 
-    var dest = fs.createWriteStream(savePath);
+    let alreadyDownloaded = await fs.exists(savePath) && await md5file(savePath) == fileInfo.md5Checksum;
 
-    await delay(80);
+    if (!alreadyDownloaded) {
+      var dest = fs.createWriteStream(savePath);
 
-    verbose("Starting the actual download...");
+      await delay(80);
 
-    await this.tryTwice(() => new Promise((resolve, reject) => {
-      this.watcher.ignore(savePath);
-      this.drive.files.get({fileId: fileInfo.id, alt: "media"})
-        .on('end', () => resolve())
-        .on('error', err => reject(err))
-        .pipe(dest);
-    }).catch(async (err) => {
-      /* Remove a partial download in case of err, don't want it to be synchronized later on */
-      await fs.remove(dest);
-      throw err;
-    }));
-    log(`Downloaded ${fileInfo.name}!`);
+      verbose("Starting the actual download...");
+
+      await this.tryTwice(() => new Promise((resolve, reject) => {
+        this.watcher.ignore(savePath);
+        this.drive.files.get({fileId: fileInfo.id, alt: "media"})
+          .on('end', () => resolve())
+          .on('error', err => reject(err))
+          .pipe(dest);
+      }).catch(async (err) => {
+        /* Remove a partial download in case of err, don't want it to be synchronized later on */
+        await fs.remove(dest);
+        throw err;
+      }));
+      log(`Downloaded ${fileInfo.name}!`);
+    } else {
+      log("File in local path with same md5 already existing");
+    }
 
     for (let otherPath of savePaths) {
       verbose("Copying file to folder ", otherPath);

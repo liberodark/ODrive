@@ -66,7 +66,7 @@ module.exports = {
     }]),
     new webpack.ProvidePlugin({
       $: 'jquery', jquery: 'jquery', jQuery: 'jquery' ,
-      "window.Tether": 'tether'
+      "window.Tether": 'tether', "Popper": "popper.js"
     }),
     new ExtractTextPlugin("stylesheets/styles.css")
   ],

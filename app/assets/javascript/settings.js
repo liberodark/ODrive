@@ -1,6 +1,7 @@
 /* global $ */
 const ipc = require('electron').ipcRenderer;
 
+// eslint-disable-next-line no-unused-vars
 function beginSynchronization(account) {
   console.log(account);
 
@@ -16,9 +17,10 @@ function UIBeginSyncing() {
 }
 
 /* React to folder change. Only change folder in current window, will send to backend when beginning synchronization */
+// eslint-disable-next-line no-unused-vars
 function handleUIChangeFolder(account) {
   let files = $("#file").prop("files");
-  if (!files || files.length == 0) {
+  if (!files || files.length == 0) {
     return;
   }
 

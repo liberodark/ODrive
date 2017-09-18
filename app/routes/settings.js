@@ -37,13 +37,13 @@ router.get('/authCallback', async (req, res, next) => {
   }
 });
 
-ipc.on('start-sync', async ({/*sender*/}, {accountId, folder}) => {
-  /* Shortcut to web IPC. Does not use 'sender' as it can be closed and reopened */
+ipc.on('start-sync', async (event, {accountId, folder}) => {
+  /* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
   let web = () => {
     if (gbs.win) {
       return gbs.win.webContents;
     } else {
-      return {send: ()=>{}}
+      return {send: ()=>{}};
     }
   };
 

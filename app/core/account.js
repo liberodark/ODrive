@@ -1,7 +1,7 @@
 const path = require('path');
 const os = require('os');
 const google = require('googleapis');
-const observable = require('riot-observable');
+const EventEmitter = require('events');
 
 const Sync = require('./sync');
 const globals = require('../../config/globals');
@@ -9,9 +9,9 @@ const OAuth2 = google.auth.OAuth2;
 
 const toSave = ["email", "about", "tokens"];
 
-class Account {
+class Account extends EventEmitter {
   constructor(doc) {
-    observable(this);
+    super();
     if (doc) {
       this.load(doc);
     }
@@ -134,7 +134,7 @@ class Account {
   }
 
   watchChanges(syncObject) {
-    syncObject.on('filesChanged', (changes) => this.trigger("filesChanged", changes));
+    syncObject.on('filesChanged', (changes) => this.emit("filesChanged", changes));
   }
 }
 

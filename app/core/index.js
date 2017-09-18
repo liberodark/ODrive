@@ -8,7 +8,7 @@ const globals = require('../../config/globals');
 
 let accounts = null;
 let db = new DataStore({
-  filename: path.join(os.homedir(), ".config/odrive/db", "global2.db"),
+  filename: path.join(os.homedir(), ".config/odrive/db", "global.db"),
   autoload: true
 });
 

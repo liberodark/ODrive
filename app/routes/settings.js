@@ -52,7 +52,7 @@ ipc.on('start-sync', async ({/*sender*/}, {accountId, folder}) => {
     account.folder = folder;
     await account.save();
     await account.sync.start(update => web().send("sync-update", {accountId, update}));
-    ipc.send('sync-end');
+    web().send('sync-end');
   } catch (err) {
     console.error(err);
 

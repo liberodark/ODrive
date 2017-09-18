@@ -34,6 +34,8 @@ class Sync extends EventEmitter {
     this.loaded = false;
     this.watchingChanges = false;
     this.closed = false;
+    this.savedTime = 0;
+    this.changesSinceSave = 0;
 
     this.watcher = new LocalWatcher(this);
     this.initWatcher();
@@ -178,11 +180,12 @@ class Sync extends EventEmitter {
   /* loop function */
   async handleChanges() {
 
-    let initialCount = (this.changesToExecute||[]).length;
     while((this.changesToExecute||[]).length > 0 && !this.closed) {
       let nextChange = this.changesToExecute.shift();
       if (await this.handleChange(nextChange)) {
         await this.save();
+      } else {
+        this.changesSinceSave += 1;
       }
     }
 
@@ -190,7 +193,8 @@ class Sync extends EventEmitter {
     this.notifyChanges();
 
     /* Save regularly if there are changes, even if they're worthless. At least it updates the change token. */
-    if ( (Date.now() - this.savedTime) > 30000 && initialCount > 0) {
+    let elapsedTime = Date.now() - this.savedTime;
+    if (elapsedTime > 30000 && this.changesSinceSave > 0) {
       await this.save();
     }
   }
@@ -316,7 +320,7 @@ class Sync extends EventEmitter {
     }
 
     if (src in this.paths) {
-      let id = this.paths[id];
+      let id = this.paths[src];
       if (id in this.fileInfo) {
         debug("File already in drive's memory, updating instead");
         return this.onLocalFileUpdated(src);
@@ -661,6 +665,10 @@ class Sync extends EventEmitter {
   }
 
   async getPaths(fileInfo) {
+    if (fileInfo === null) {
+      return [];
+    }
+
     //log('Get path', fileInfo.name);
     if (fileInfo.id == this.rootId) {
       return [this.folder];
@@ -784,9 +792,20 @@ class Sync extends EventEmitter {
       });
     });
 
-    let fileInfo = await this.tryTwice(getFileInfo);
+    try {
+      let fileInfo = await this.tryTwice(getFileInfo);
 
-    return this.storeFileInfo(fileInfo);
+      return this.storeFileInfo(fileInfo);
+    } catch (err) {
+      /* File not existing on the other side */
+      if (err.code == 404) {
+        log("Unable to get requested file info for ", fileId);
+        return null;
+      }
+
+      //Throw back other errors
+      throw err;
+    }
   }
 
   async storeFileInfo(info) {
@@ -908,9 +927,10 @@ class Sync extends EventEmitter {
 
     while (this.queued.length > 0 && !this.closed) {
       let f = this.queued[0];
-      debug("Awaiting function end");
+      debug("Awaiting function end--->");
       await f();
       this.queued.shift();
+      debug("<---Function ended");
     }
     debug("Queue end");
   }
@@ -987,6 +1007,7 @@ class Sync extends EventEmitter {
 
       await globals.db.update({_id: this.id}, saveObject, {});
       this.savedTime = Date.now();
+      this.changesSinceSave = 0;
       verbose("Saved new synchronization changes!");
 
       this.watchChanges();

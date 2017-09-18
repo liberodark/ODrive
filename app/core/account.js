@@ -7,13 +7,14 @@ const Sync = require('./sync');
 const globals = require('../../config/globals');
 const OAuth2 = google.auth.OAuth2;
 
-const toSave = ["email", "about", "tokens", "folder"];
+const toSave = ["email", "about", "tokens", "folder", "saveTime"];
 
 class Account extends EventEmitter {
   constructor(doc) {
     super();
     if (doc) {
       this.load(doc);
+      this.previousSaveTime = doc.saveTime || Date.now();
     }
     this.folder = this.folder || path.join(os.homedir(), "Google Drive");
     this.oauth = new OAuth2(
@@ -81,6 +82,7 @@ class Account extends EventEmitter {
   /* Save the data to database */
   async save() {
     console.log("Saving account to db");
+    this.saveTime = Date.now();
     let doc = this.document || {};
 
     for (let element of toSave) {

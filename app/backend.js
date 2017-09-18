@@ -60,17 +60,23 @@ listen();
 /* Handle error */
 process.on('unhandledRejection', async (error) => {
   // Will print "unhandledRejection err is not defined"
-  console.error('Unhandled rejection', error.errno);
-  //console.error(error);
+  console.error('Unhandled rejection', error.message);
 
   if (isConnectionError(error)) {
     globals.updateConnectivity(false);
 
     if (error.syncObject && error.watcher) {
+      let {syncObject} = error;
       console.log("Connection error when watching changes, restarting in 10 seconds");
-      setTimeout(() => error.syncObject.load(), 10000);
+      setTimeout(() => syncObject.load(), 10000);
     }
   }
+
+  //Too much logging
+  if ("syncObject" in error) {
+    delete error["syncObject"];
+  }
+  console.error(error);
 });
 
 process.on('uncaughtException', error => {
@@ -86,10 +92,17 @@ process.on('uncaughtException', error => {
     globals.updateConnectivity(false);
 
     if (error.syncObject && error.watcher) {
+      let {syncObject} = error;
       console.log("Connection error when watching changes, restarting in 10 seconds");
-      setTimeout(() => error.syncObject.load(), 10000);
+      setTimeout(() => syncObject.load(), 10000);
     }
   }
+
+  //Too much logging
+  if ("syncObject" in error) {
+    delete error["syncObject"];
+  }
+  console.error(error);
 });
 
 module.exports = {

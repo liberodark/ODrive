@@ -33,6 +33,7 @@ class Sync extends EventEmitter {
     this.changesToExecute = null;
     this.loaded = false;
     this.watchingChanges = false;
+    this.closed = false;
 
     this.watcher = new LocalWatcher(this);
     this.initWatcher();
@@ -104,6 +105,11 @@ class Sync extends EventEmitter {
     }
   }
 
+  async close() {
+    this.watcher.stopWatching();
+    this.closed = true;
+  }
+
   async startWatchingChanges() {
     await this.finishLoading();
 
@@ -128,7 +134,7 @@ class Sync extends EventEmitter {
     });
   }
 
-  /* Continuously watch for new changes and apply them */
+  /* Continuously watch for new changes and apply them, loop function */
   async watchChanges() {
     await this.finishLoading();
 
@@ -144,8 +150,7 @@ class Sync extends EventEmitter {
         await this.startWatchingChanges();
       }
 
-      // eslint-disable-next-line no-constant-condition
-      while (1) {
+      while (!this.closed) {
         /* Don't handle changes at the same time as syncing... */
         if (!this.syncing && this.synced) {
           await this.handleNewChanges();
@@ -170,10 +175,11 @@ class Sync extends EventEmitter {
     await this.handleChanges();
   }
 
+  /* loop function */
   async handleChanges() {
 
     let initialCount = (this.changesToExecute||[]).length;
-    while((this.changesToExecute||[]).length > 0) {
+    while((this.changesToExecute||[]).length > 0 && !this.closed) {
       let nextChange = this.changesToExecute.shift();
       if (await this.handleChange(nextChange)) {
         await this.save();
@@ -888,6 +894,7 @@ class Sync extends EventEmitter {
     this.watcher.on('change', path => this.queue(() => this.onLocalFileUpdated(path)));
   }
 
+  /* Loop function */
   async queue(fn) {
     debug("queuing function");
     this.queued.push(fn);
@@ -899,7 +906,7 @@ class Sync extends EventEmitter {
       return;
     }
 
-    while (this.queued.length > 0) {
+    while (this.queued.length > 0 && !this.closed) {
       let f = this.queued[0];
       debug("Awaiting function end");
       await f();
@@ -983,6 +990,27 @@ class Sync extends EventEmitter {
       verbose("Saved new synchronization changes!");
 
       this.watchChanges();
+      this.saving = false;
+    } catch(err) {
+      this.saving = false;
+      throw err;
+    }
+  }
+
+  async erase() {
+    verbose("Erasing sync object");
+    await this.close();
+    await this.finishLoading();
+
+    if (this.loading || this.saving) {
+      return await this.finishSaveOperation();
+    }
+    this.saving = true;
+
+    try {
+      if (this.id) {
+        await globals.db.remove({type: "sync", accountId: this.account.id});
+      }
       this.saving = false;
     } catch(err) {
       this.saving = false;

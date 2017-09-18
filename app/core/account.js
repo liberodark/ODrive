@@ -100,6 +100,17 @@ class Account extends EventEmitter {
     console.log("Saved account!");
   }
 
+  async erase() {
+    console.log("Removing account from db");
+    if (this.sync) {
+      await this.sync.erase();
+      this.sync = null;
+    }
+    if (this.id) {
+      await globals.db.remove({_id: this.id});
+    }
+  }
+
   load(doc) {
     this.document = doc;
 

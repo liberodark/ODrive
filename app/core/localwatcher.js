@@ -39,6 +39,10 @@ class LocalWatcher extends EventEmitter {
       });
   }
 
+  stopWatching() {
+    this.watcher.close();
+  }
+
   queue(path, event) {
     if (!this.ready) {
       return;

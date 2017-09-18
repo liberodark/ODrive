@@ -34,4 +34,11 @@ body {
   #synchronize-status {
     @extend .form-control-plaintext;
   }
+
+  /* The trash button in settings page, next to account email */
+  li a.btn {
+    padding: 0px;
+    min-width: 20px;
+    margin-bottom: -4px;
+  }
 }

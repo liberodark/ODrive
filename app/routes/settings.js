@@ -22,6 +22,13 @@ router.get('/add', (req, res) => {
   res.send("Multiple accounts not yet supported");
 });
 
+router.get('/delete/:id', async (req, res) => {
+  let account = await core.getAccountById(req.params.id);
+  await core.removeAccount(account);
+
+  res.redirect('/settings');
+});
+
 router.get('/authCallback', async (req, res, next) => {
   try {
     let code = req.query.code;

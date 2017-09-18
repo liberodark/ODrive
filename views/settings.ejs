@@ -34,7 +34,7 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
   <% } else { %>
     <p><ul class="list-group">
     <% for (let account of accounts) {%>
-      <li class="list-group-item"><%= account.email %></li>
+      <li class="list-group-item"><%= account.email %> <a class="btn btn-sm btn-danger pull-right" href="/delete/<%- account.id %>"><i class="fa fa-times"></i></a></li>
     <%
     } %>
   </ul></p>

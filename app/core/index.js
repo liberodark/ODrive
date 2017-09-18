@@ -64,6 +64,14 @@ class Core extends EventEmitter {
     account.on("filesChanged", (changes) => this.handleChanges(changes));
   }
 
+  async removeAccount(account) {
+    let index = accounts.indexOf(account);
+    if (index >= 0) {
+      accounts.splice(index, 1);
+      await account.erase();
+    }
+  }
+
   /* Compile changes and send a notification to electron */
   handleChanges(changes) {
     let arr = [];

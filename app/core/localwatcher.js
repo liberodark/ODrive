@@ -46,7 +46,8 @@ class LocalWatcher extends EventEmitter {
           continue;
         }
 
-        if (!await fs.exists(path)) {
+        if (this.sync.onLocalDrive[path] && !await fs.exists(path)) {
+          delete this.sync.onLocalDrive[path];
           this.addCache(path, 'unlink');
           log(`${path} not detected locally, scheduling for unlink`);
         }
@@ -101,6 +102,12 @@ class LocalWatcher extends EventEmitter {
 
     if (path == this.sync.folder && event == "addDir") {
       return;
+    }
+
+    if (event == "add" || event == "addDir") {
+      this.sync.onLocalDrive[path] = true;
+    } else if (event == "unlink" || event == "unlinkDir") {
+      delete this.sync.onLocalDrive[path];
     }
 
     /* On the first run, dismiss spurrious 'add' events, i.e. those for which the path is already in the database and the modified time is old */

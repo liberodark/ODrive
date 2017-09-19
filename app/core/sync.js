@@ -16,7 +16,7 @@ const listFilesFields = `nextPageToken, files(${fileInfoFields})`;
 const changeInfoFields = `time, removed, fileId, file(${fileInfoFields})`;
 const changesListFields = `nextPageToken, newStartPageToken, changes(${changeInfoFields})`;
 
-const toSave = ["changeToken", "fileInfo", "synced", "rootId", "changesToExecute"];
+const toSave = ["changeToken", "fileInfo", "synced", "rootId", "changesToExecute", "onLocalDrive"];
 
 class Sync extends EventEmitter {
   constructor(account) {
@@ -25,6 +25,7 @@ class Sync extends EventEmitter {
     this.account = account;
     this.fileInfo = {};
     this.paths = {};
+    this.onLocalDrive = {};//Keep track of files already downloaded locally
     this.lastChanges = {};
     this.queued = [];
     this.rootId = null;
@@ -962,7 +963,7 @@ class Sync extends EventEmitter {
 
       if (obj) {
         for (let item of toSave) {
-          this[item] = obj[item];
+          this[item] = obj[item] || this[item];
         }
         this.id = obj._id;
       } else {

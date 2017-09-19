@@ -1,6 +1,7 @@
 const EventEmitter = require('events');
 const chokidar = require("chokidar");
 const fs = require("fs-extra");
+const {log} = require('../modules/logging');
 
 class LocalWatcher extends EventEmitter {
   constructor(syncObject) {
@@ -11,7 +12,7 @@ class LocalWatcher extends EventEmitter {
     this.ready = false;
     this.cache = {};
     this.localQueue = [];
-    this.startWatching();
+    this.initialized = false;
   }
 
   get folder() {
@@ -23,14 +24,39 @@ class LocalWatcher extends EventEmitter {
     return this.sync.account.previousSaveTime;
   }
 
-  startWatching() {
-    /* Todo: first compare file structure to last snapshot */
+  init() {
+    if (!this.initialized) {
+      this.startWatching();
+      this.initialized = true;
+    }
+  }
+
+  async startWatching() {
+    /* Todo: first detect any file deleted */
+    if (await fs.exists(this.sync.folder)) {
+      let paths = Object.keys(this.sync.paths);
+
+      /* Make sure folder paths appear before subpaths */
+      paths.sort();
+
+      for (let path of paths) {
+        let fileInfo = this.sync.fileInfoFromPath(path);
+
+        if (!fileInfo || this.sync.shouldIgnoreFile(fileInfo)) {
+          continue;
+        }
+
+        if (!await fs.exists(path)) {
+          this.addCache(path, 'unlink');
+          log(`${path} not detected locally, scheduling for unlink`);
+        }
+      }
+    }
+
     this.watcher = chokidar.watch(this.folder, {
       //ignored: /(^|[\/\\])\../,
       persistent: true
     });
-
-    let log = console.log.bind(console);
 
     this.watcher.on('add', path => this.queue(path, 'add'))
       .on('change', (path, stats) => this.queue(path, 'change', stats))
@@ -58,7 +84,7 @@ class LocalWatcher extends EventEmitter {
       return;
     }
 
-    while (this.localQueue.length > 0) {
+    while (this.localQueue.length > 0 && !this.closed) {
       await this.dealWithQueuedEvent(this.localQueue[0]);
 
       //Only remove first element now, so that this.localQueue.length > 1 if a new event is added in the meantime (above test)
@@ -73,15 +99,26 @@ class LocalWatcher extends EventEmitter {
       return;
     }
 
-    if (!this.ready) {
-      /* Check if the file/folder was last changed since app went offline */
-      let {mtime} = await fs.stat(path);
-      //As of writing code, mtimeMs is not yet in electron's node implementation
-      mtime = (new Date(mtime)).getTime();
+    if (path == this.sync.folder && event == "addDir") {
+      return;
+    }
 
-      if (this.lastOnline - mtime > 0) {
-        /* App was still online when file/folder was last changed, so it's already taken care of */
-        return;
+    /* On the first run, dismiss spurrious 'add' events, i.e. those for which the path is already in the database and the modified time is old */
+    if (!this.ready) {
+      if (path in this.sync.paths) {
+        /* Check if the file/folder was last changed since app went offline */
+        let {mtime} = await fs.stat(path);
+        //As of writing code, mtimeMs is not yet in electron's node implementation
+        mtime = (new Date(mtime)).getTime();
+
+        if (this.lastOnline - mtime > 0) {
+          /* App was still online when file/folder was last changed, so it's already taken care of */
+          return;
+        } else {
+          log(`Modified since last launch: ${path}`);
+        }
+      } else {
+        log(`New file since launch: ${path}`);
       }
     }
 

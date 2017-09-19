@@ -808,6 +808,18 @@ class Sync extends EventEmitter {
     }
   }
 
+  /* Utility function to only check in local memory */
+  fileInfoFromPath(path) {
+    if (!(path in this.paths)) {
+      return null;
+    }
+    let id = this.paths[path];
+    if (!(id in this.fileInfo)) {
+      return null;
+    }
+    return this.fileInfo[id];
+  }
+
   async storeFileInfo(info) {
     await this.computePaths(info);
     return this.fileInfo[info.id] = info;
@@ -965,6 +977,8 @@ class Sync extends EventEmitter {
 
       //Load changes that might have not gotten throughs
       this.loaded = true;
+
+      this.watcher.init();
       await this.handleChanges();
 
       if (obj && obj.synced) {

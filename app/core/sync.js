@@ -57,6 +57,21 @@ class Sync extends EventEmitter {
     return this.account.folder;
   }
 
+  /* check if file is in local registry */
+  locallyRegistered(path) {
+    /* base64 encoding because of nedb */
+    return Buffer.from(path).toString('base64') in this.onLocalDrive;
+  }
+
+  registerLocalFile(path) {
+    /* base64 encoding because of nedb */
+    this.onLocalDrive[Buffer.from(path).toString('base64')] = true;
+  }
+
+  unregisterLocalFile(path) {
+    delete this.onLocalDrive[Buffer.from(path).toString('base64')];
+  }
+
   async start(notifyCallback) {
     await this.finishLoading();
 
@@ -965,6 +980,10 @@ class Sync extends EventEmitter {
         for (let item of toSave) {
           this[item] = obj[item] || this[item];
         }
+        if (!this.loaded) {
+          log("Local files registered: ", Object.keys(this.onLocalDrive).length);
+        }
+
         this.id = obj._id;
       } else {
         verbose("Nothing to load");

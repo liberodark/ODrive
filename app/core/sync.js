@@ -162,6 +162,8 @@ class Sync extends EventEmitter {
     }
     this.watchingChanges = true;
 
+    log("Watching remote changes...");
+
     try {
       if (!this.changeToken) {
         error(new Error("Error in application flow, no valid change token"));
@@ -176,6 +178,7 @@ class Sync extends EventEmitter {
         await delay(8000);
       }
     } catch (err) {
+      log("Error when watching changes...");
       this.watchingChanges = false;
 
       /* For the unhandledRejection handler */

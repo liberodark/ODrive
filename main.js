@@ -1,6 +1,7 @@
 const {app, BrowserWindow, Tray, Menu} = require('electron');
 const url = require('url');
 const notifier = require('node-notifier');
+const path = require("path");
 
 const gbs = require('./config/globals');
 const core = require('./app/core');
@@ -8,12 +9,15 @@ const core = require('./app/core');
 //Actual backend
 const backend = require('./app/backend');
 
+let logo = path.join(__dirname, 'public', 'logo.png');
+let logoGrey = path.join(__dirname, 'public', 'logo-grey.png');
+
 function createWindow () {
   // Create the browser window.
   gbs.win = new BrowserWindow({
     width: 600,
     height: 250,
-    icon: "public/logo.png",
+    icon: logo,
     webPreferences: {
       //nodeIntegration: false
     },
@@ -41,7 +45,7 @@ function createWindow () {
 }
 
 function generateTray() {
-  gbs.tray = new Tray('public/logo.png');
+  gbs.tray = new Tray(logo);
 
   gbs.trayMenu = Menu.buildFromTemplate([
     {
@@ -88,7 +92,7 @@ async function launch() {
 
 function updateTrayIcon() {
   console.log("Updating tray icon, connected: ", gbs.connected);
-  let path = gbs.connected ? 'public/logo.png' : 'public/logo-grey.png';
+  let path = gbs.connected ? logo : logoGrey;
   gbs.tray.setImage(path);
 }
 

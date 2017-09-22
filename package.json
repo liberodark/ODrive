@@ -1,6 +1,6 @@
 {
   "name": "odrive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple google drive client",
   "main": "main.js",
   "repository": "git@github.com:liberodark/ODrive.git",

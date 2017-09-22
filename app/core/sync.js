@@ -27,6 +27,7 @@ class Sync extends EventEmitter {
     this.paths = {};
     this.onLocalDrive = {};//Keep track of files already downloaded locally
     this.lastChanges = {};
+    this.lastChangesUpdated = Date.now();
     this.queued = [];
     this.rootId = null;
     this.synced = false;
@@ -291,6 +292,10 @@ class Sync extends EventEmitter {
   }
 
   async notifyChanges() {
+    if (Date.now() - this.lastChangesUpdated < 3000) {
+      //Give time for other changes to happen, in order to group them all
+      return;
+    }
     if (!deepEqual({}, this.lastChanges)) {
       this.emit("filesChanged", this.lastChanges);
       this.lastChanges = {};
@@ -302,7 +307,8 @@ class Sync extends EventEmitter {
     if (yesOrNo) {
       this.lastChanges[type] = this.lastChanges[type] || 0;
       this.lastChanges[type] += 1;
-      console.log("Last changes updated:", this.lastChanges);
+      log("Last changes updated:", this.lastChanges);
+      this.lastChangesUpdated = Date.now();
     }
     return yesOrNo;
   }
@@ -376,6 +382,8 @@ class Sync extends EventEmitter {
 
     let result = await this.tryTwice(addRemotely);
 
+    this.logChange("added", true);
+
     await this.storeFileInfo(result);
     await this.save();
   }
@@ -444,6 +452,8 @@ class Sync extends EventEmitter {
       }
     }
 
+    this.logChange("updated", true);
+
     await this.save();
   }
 
@@ -482,6 +492,8 @@ class Sync extends EventEmitter {
     });
 
     await this.tryTwice(rmRemotely);
+
+    this.logChange("removed", true);
   }
 
   async onLocalDirAdded(src) {

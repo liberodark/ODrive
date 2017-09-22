@@ -1,1 +1,1 @@
-module.exports = error => ["ECONNRESET", "ECONNREFUSED", "EAI_AGAIN"].includes(error.code);
+module.exports = error => ["ECONNRESET", "ECONNREFUSED", "EAI_AGAIN", "ENOTFOUND"].includes(error.code);

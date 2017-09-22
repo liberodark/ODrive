@@ -87,6 +87,7 @@ async function launch() {
 }
 
 function updateTrayIcon() {
+  console.log("Updating tray icon, connected: ", gbs.connected);
   let path = gbs.connected ? 'public/logo.png' : 'public/logo-grey.png';
   gbs.tray.setImage(path);
 }

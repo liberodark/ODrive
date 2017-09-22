@@ -480,7 +480,7 @@ class Sync extends EventEmitter {
     }
 
     let rmRemotely = () => new Promise((resolve, reject) => {
-      log("Deleting file on drive.");
+      log("Deleting file on drive.", id);
       this.drive.files.delete({fileId: id}, (err, result) => {
         if (err) {
           error(err);

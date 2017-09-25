@@ -243,7 +243,7 @@ class Sync extends EventEmitter {
     await this.storeFileInfo(newInfo);
 
     if (this.noChange(newInfo, oldInfo)) {
-      verbose("Same main info, ignoring");
+      log("Same main info, ignoring change for file ", newInfo.name);
       /* Nothing happened */
       return false;
     }

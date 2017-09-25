@@ -67,10 +67,12 @@ class Sync extends EventEmitter {
   registerLocalFile(path) {
     /* base64 encoding because of nedb */
     this.onLocalDrive[Buffer.from(path).toString('base64')] = true;
+    this.changesSinceSave += 1;
   }
 
   unregisterLocalFile(path) {
     delete this.onLocalDrive[Buffer.from(path).toString('base64')];
+    this.changesSinceSave += 1;
   }
 
   async start(notifyCallback) {

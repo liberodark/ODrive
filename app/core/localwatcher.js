@@ -55,7 +55,6 @@ class LocalWatcher extends EventEmitter {
     }
 
     this.watcher = chokidar.watch(this.folder, {
-      //ignored: /(^|[\/\\])\../,
       persistent: true
     });
 
@@ -65,10 +64,7 @@ class LocalWatcher extends EventEmitter {
       .on('addDir', path => this.queue(path, 'addDir'))
       .on('unlinkDir', path => this.queue(path, 'unlinkDir'))
       .on('ready', () => this.queue('', 'ready'))
-      .on('error', error => log(`Watcher error: ${error}`))
-      .on('raw', (event, path, details) => { //eslint-disable-line no-unused-vars
-        //log('Raw event info:', event, path, details);
-      });
+      .on('error', error => log(`Watcher error: ${error}`));
   }
 
   stopWatching() {

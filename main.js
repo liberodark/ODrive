@@ -19,7 +19,6 @@ function createWindow () {
     height: 250,
     icon: logo,
     webPreferences: {
-      //nodeIntegration: false
     },
     'use-content-size': true
   });
@@ -31,9 +30,6 @@ function createWindow () {
     protocol: 'http:',
     slashes: true
   }));
-
-  // Open the DevTools.
-  //win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   gbs.win.on('closed', () => {
@@ -62,7 +58,6 @@ function generateTray() {
       click () {process.exit(0);}
     }
   ]);
-  //gbs.tray.setToolTip('This is my application.')
   gbs.tray.setContextMenu(gbs.trayMenu);
 }
 

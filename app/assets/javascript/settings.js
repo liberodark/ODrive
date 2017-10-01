@@ -31,7 +31,7 @@ function handleUIChangeFolder(account) {
 
 ipc.on('sync-update', ({sender}, arg) => {
   console.log(arg);
-  let {/* accountId, */ update} = arg;
+  let { update } = arg;
   $("#synchronize-status").text(update);
 });
 

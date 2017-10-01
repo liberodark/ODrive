@@ -187,7 +187,6 @@ class Sync extends EventEmitter {
       /* For the unhandledRejection handler */
       err.syncObject = this;
       err.watcher = true;
-      /* .... */
 
       throw err;
     }
@@ -464,7 +463,6 @@ class Sync extends EventEmitter {
 
     if (!(src in this.paths)) {
       debug(`Not existing in path architecture (${Object.keys(this.paths).length} paths)`);
-      //log(this.paths);
       return;
     }
 
@@ -511,9 +509,7 @@ class Sync extends EventEmitter {
 
     /* Create local file info */
     let info = {
-      //id: uuid(),
       name: path.basename(src),
-      //md5Checksum: await md5file(src),
       parents: [await this.getParent(src)],
       mimeType: "application/vnd.google-apps.folder"
     };
@@ -702,12 +698,10 @@ class Sync extends EventEmitter {
       return [];
     }
 
-    //log('Get path', fileInfo.name);
     if (fileInfo.id == this.rootId) {
       return [this.folder];
     }
     if (!fileInfo.parents) {
-      //log("File out of the main folder structure", fileInfo);
       return [];
     }
 
@@ -811,7 +805,6 @@ class Sync extends EventEmitter {
     If the file info is not present in cache or if forceUpdate is true,
     it seeks the information remotely and updates the cache as well. */
   async getFileInfo(fileId, forceUpdate) {
-    //log("Getting individual file info: ", fileId);
     if (!forceUpdate && (fileId in this.fileInfo)) {
       return this.fileInfo[fileId];
     }
@@ -860,9 +853,7 @@ class Sync extends EventEmitter {
 
   async computePaths(info) {
     if (info) {
-      //log("Computing paths", info.id, info.name);
       for (let path of await this.getPaths(info)) {
-        //log(path);
         this.paths[path] = info.id;
       }
     } else {

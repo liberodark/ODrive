@@ -21,7 +21,6 @@ class Account extends EventEmitter {
       globals.api,
       globals.secret,
       `http://127.0.0.1:${globals.port}/authCallback`
-      //"http://odrive.io/authCallback"
     );
     if (this.tokens) {
       this.onTokensReceived(this.tokens);
@@ -59,11 +58,6 @@ class Account extends EventEmitter {
   updateUserInfo() {
     console.log("Updating account info");
     return new Promise((resolve, reject) => {
-      /*
-        https://developers.google.com/drive/v3/reference/about/get
-        https://developers.google.com/drive/v3/web/migration
-        https://developers.google.com/drive/v3/web/search-parameters
-      */
       this.drive.about.get({q: "user.me == true", fields: "user"}, (err, about) => {
         //console.log("User info", about);
 
@@ -132,7 +126,6 @@ class Account extends EventEmitter {
   }
 
   onTokensReceived(tokens) {
-    //console.log("Auth tokens", tokens);
     this.tokens = tokens;
 
     this.oauth.setCredentials(tokens);

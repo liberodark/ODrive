@@ -59,7 +59,7 @@ listen();
 
 /* Handle error */
 process.on('unhandledRejection', async (error) => {
-  // Will print "unhandledRejection err is not defined"
+  //Will print "unhandledRejection err is not defined"
   console.error('Unhandled rejection', error.message);
 
   if (isConnectionError(error)) {
@@ -81,7 +81,6 @@ process.on('unhandledRejection', async (error) => {
 
 process.on('uncaughtException', error => {
   console.error('Uncaught exception', error.errno);
-  //console.error(error);
 
   if(error.errno === 'EADDRINUSE') {
     console.error('Make sure that another instance of OpenDrive is not running.');

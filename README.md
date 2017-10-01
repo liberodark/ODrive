@@ -19,23 +19,31 @@ This is a GUI client for Google Drive on linux application based on the https://
 
 ## To Use
 
-To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
+To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. 
+
+The first thing you need is the source code, in your command line:
 
 ```bash
 # Clone this repository
 git clone https://github.com/liberodark/ODrive
-# Run the app
-npm start
 ```
+This will download all the source code in a "ODrive" folder in the current directory. Alternatively, you can download and extract the zip from github's interface.
 
-Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
+The steps below (Setup, Build, Run) are to execute in order to ready everything. 
 
 ## Setup
+
+This step is only needed once, in order to install the necessary environment on your computer for ODrive to run.
 
 ```bash
 sudo npm install -g electron webpack eslint
 ```
+
+Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
+
 ## Build
+
+This step is to execute every new version of the source code.
 
 In the project directory:
 
@@ -52,9 +60,11 @@ In the project directory:
 npm start
 ```
 
+On Windows, you can make a `.bat` file with `start cmd /k nmp start` that then you can double click to launch the program.
+
 ## Testing
 
-To make sure the code is ok:
+To make sure the code is ok and run some sanity checks on it:
 
 ```bash
 npm test

@@ -9,7 +9,7 @@ confinement: strict
 
 apps:
   stacer:
-     command: stacer
+     command: odrive
      plugs: [network, home, unity7]
                             
 parts:
@@ -17,18 +17,10 @@ parts:
     plugin: nil 
     source: .
     build-packages:
-        - qt-sdk
+        - nodejs
     after:
         - linuxdeployqt
     install: |
          ./deploy.sh
          ./install.sh
-
-  linuxdeployqt:
-        plugin: qmake
-        source: https://github.com/probonopd/linuxdeployqt.git 
-        build-packages:
-             - g++
-             - libgl1-mesa-dev
-
   

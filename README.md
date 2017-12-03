@@ -85,16 +85,16 @@ sudo npm install electron-packager -g
 ```
 For Linux :
 ```bash
-electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds
+npm run package-linux
 ```
 For Mac :
 ```bash
-electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds
+npm run package-mac
 ```
 
 For Windows :
 ```bash
-electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds
+npm run package-win
 ```
 
 ## License

@@ -41,6 +41,10 @@ sudo npm install -g electron webpack eslint
 
 Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
 
+Note 2: If you're using Ubuntu and you get an error message about a missing node binary, you may want to try [this](https://stackoverflow.com/questions/18130164/nodejs-vs-node-on-ubuntu-12-04): 
+
+```sudo ln -s `which nodejs` /usr/bin/node```
+
 ## Build
 
 This step is to execute every new version of the source code.

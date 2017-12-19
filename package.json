@@ -44,9 +44,11 @@
     "webpack": "^3.6.0"
   },
   "scripts": {
-    "lint": "eslint app main.js",
+    "lint": "./node_modules/eslint/bin/eslint.js app main.js",
     "test": "npm run lint",
-    "start": "electron main",
+    "start": "./node_modules/electron/dist/electron  main",
+    "webpack": "./node_modules/webpack/bin/webpack.js",
+    "postinstall": "npm run webpack",
     "package-linux": "electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
     "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
     "package-win": "electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds"

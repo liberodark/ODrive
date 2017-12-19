@@ -36,14 +36,11 @@ The steps below (Setup, Build, Run) are to execute in order to ready everything.
 This step is only needed once, in order to install the necessary environment on your computer for ODrive to run.
 
 ```bash
-sudo npm install -g electron webpack eslint
+# Needed for electron 1.7+ to run, as it's based on chrome
+sudo apt install libgconf-2-4
 ```
 
 Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
-
-Note 2: If you're using Ubuntu and you get an error message about a missing node binary, you may want to try [this](https://stackoverflow.com/questions/18130164/nodejs-vs-node-on-ubuntu-12-04): 
-
-```sudo ln -s `which nodejs` /usr/bin/node```
 
 ## Build
 
@@ -53,8 +50,11 @@ In the project directory:
 
 ```bash
 npm install
-webpack
 ```
+
+Note: If you're using Ubuntu and you get an error message about a missing node binary, you may want to try [this](https://stackoverflow.com/questions/18130164/nodejs-vs-node-on-ubuntu-12-04): 
+
+```sudo ln -s `which nodejs` /usr/bin/node```
 
 ## Run
 

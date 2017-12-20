@@ -56,6 +56,8 @@ Note: If you're using Ubuntu and you get an error message about a missing node b
 
 ```sudo ln -s `which nodejs` /usr/bin/node```
 
+If you are working on the code yourself and editing some files in `app/assets/`, you will need to run `npm run webpack` (or `npm install`) for those changes to have an impact on the application.
+
 ## Run
 
 In the project directory:

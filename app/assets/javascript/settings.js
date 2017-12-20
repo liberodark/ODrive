@@ -29,6 +29,7 @@ function handleUIChangeFolder(account) {
   account.folder = path;
 }
 
+// eslint-disable-next-line no-unused-vars
 ipc.on('sync-update', ({sender}, arg) => {
   console.log(arg);
   let { update } = arg;
@@ -49,6 +50,7 @@ ipc.on('sync-enable', () => {
   $("#synchronize-button").prop("disabled", false);
 });
 
+// eslint-disable-next-line no-unused-vars
 ipc.on('error', ({sender}, message) => {
   console.log(message);
   $("#synchronize-status").text('Error: ' + message);

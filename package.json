@@ -49,6 +49,7 @@
     "start": "electron  main",
     "webpack": "webpack",
     "postinstall": "npm run webpack",
+    "package-all": "npm run package-linux && npm run package-mac && npm run package-win",
     "package-linux": "electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
     "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
     "package-win": "electron-packager . --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds"

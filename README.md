@@ -80,15 +80,6 @@ npm test
 
 To make a build for your OS:
 
-
-for use in npm scripts
-```bash
-npm install electron-packager --save-dev
-```
-for use from cli
-```bash
-sudo npm install electron-packager -g
-```
 For Linux :
 ```bash
 npm run package-linux
@@ -103,7 +94,7 @@ For Windows :
 npm run package-win
 ```
 
-For All :
+For all three :
 ```bash
 npm run package-all
 ```

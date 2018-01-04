@@ -103,6 +103,11 @@ For Windows :
 npm run package-win
 ```
 
+For All :
+```bash
+npm run package-all
+```
+
 ## License
 
 [GPL v3](LICENSE.md)

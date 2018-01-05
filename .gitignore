@@ -41,4 +41,7 @@ yarn.lock
 
 # Express
 public
-/release-builds/
+
+# Packaging / releases
+release-builds
+dist

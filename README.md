@@ -76,28 +76,38 @@ To make sure the code is ok and run some sanity checks on it:
 npm test
 ```
 
-## Make Executable
+## Deployment
 
-To make a build for your OS:
+### Releases
 
-For Linux :
-```bash
-npm run package-linux
-```
-For Mac :
-```bash
-npm run package-mac
-```
+There are currently three "release" formats supported: nsis (Windows installer) for Windows, AppImage for Linux, and DMG for Mac. You can generate them like this:
 
-For Windows :
 ```bash
-npm run package-win
+npm run release-windows
+npm run release-linux
+npm run release-mac
 ```
 
-For all three :
+To create a different format, like a deb or rpm package for example:
 ```bash
-npm run package-all
+npm run release-linux deb
+npm run release-linux rpm
 ```
+
+The releases are generated in the `dist` folder.
+
+All formats supported by [electron-builder](https://github.com/electron-userland/electron-builder) are available, such as 7z, zip, tar.gz, deb, rpm, freebsd, pacman, p5p, apk, dmg, pkg, mas, nsis, appx, msi...
+
+### Permissionless deployment
+
+An appimage on linux already runs permissionless. Anyway, you can just do:
+
+```bash
+# Permissonless deployment
+npm run release-windows dir # or zip, 7zip, tar.xz, tar.7z, ...
+```
+
+This will create a folder in `dist` that you can just copy to a Windows machine.
 
 ## License
 

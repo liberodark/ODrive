@@ -9,8 +9,9 @@ const core = require('./app/core');
 //Actual backend
 const backend = require('./app/backend');
 
-let logo = path.join(__dirname, 'public', 'logo.png');
-let logoGrey = path.join(__dirname, 'public', 'logo-grey.png');
+const logo = path.join(__dirname, 'public', 'images', 'logo.png');
+const logoGrey = path.join(__dirname, 'public', 'images', 'logo-grey.png');
+const logoSync = path.join(__dirname, 'public', 'images', 'logo-sync.png');
 
 function createWindow () {
   // Create the browser window.
@@ -83,11 +84,14 @@ async function launch() {
   gbs.on("connectivity", () => {
     updateTrayIcon();
   });
+  gbs.on("syncing", () => {
+    updateTrayIcon();
+  });
 }
 
 function updateTrayIcon() {
-  console.log("Updating tray icon, connected: ", gbs.connected);
-  let path = gbs.connected ? logo : logoGrey;
+  console.log("Updating tray icon, connected: ", gbs.connected, "syncing: ", gbs.syncing);
+  let path = gbs.connected ? (gbs.syncing ? logoSync : logo) : logoGrey;
   gbs.tray.setImage(path);
 }
 

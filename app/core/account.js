@@ -101,6 +101,7 @@ class Account extends EventEmitter {
     if (this.sync) {
       await this.sync.erase();
       this.sync = null;
+      globals.updateSyncing(false);
     }
     if (this.id) {
       await globals.db.remove({_id: this.id});
@@ -140,6 +141,7 @@ class Account extends EventEmitter {
   }
 
   watchChanges(syncObject) {
+    syncObject.on('syncing', syncing => globals.updateSyncing(syncing));
     syncObject.on('filesChanged', (changes) => this.emit("filesChanged", changes));
   }
 }

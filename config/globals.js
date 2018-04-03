@@ -11,6 +11,7 @@ class Globals extends EventEmitter {
     this.secret = "did-JgyKIPUtVU2J5Hi2a2ES";
     this.port = process.env.port || 16409;
     this.connected = true;
+    this.syncing = false;
   }
 
   updateConnectivity(isConnected) {
@@ -21,6 +22,16 @@ class Globals extends EventEmitter {
     console.log("Updated connection status");
     this.connected = isConnected;
     this.emit("connectivity", isConnected);
+  }
+
+  updateSyncing(syncing) {
+    if (this.syncing === syncing) {
+      return false;
+    }
+
+    console.log("Updated syncing status");
+    this.syncing = syncing;
+    this.emit("syncing", syncing);
   }
 }
 

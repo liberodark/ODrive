@@ -38,12 +38,60 @@ class Sync extends EventEmitter {
     this.closed = false;
     this.savedTime = 0;
     this.changesSinceSave = 0;
+    this.handlingRemoteChange = false;
+    this.handlingLocalChange = false;
 
     this.watcher = new LocalWatcher(this);
     this.initWatcher();
 
     /* Check if already in memory */
     this.load();
+  }
+
+  set handlingLocalChange(value) {
+    if (this.handlingLocalChange === value) {
+      return;
+    }
+    this._handlingLocalChange = value;
+    console.log("local change", value, this.syncing || this.handlingLocalChange || this.handlingRemoteChange);
+    this.emit("syncing", this.syncing || this.handlingLocalChange || this.handlingRemoteChange);
+    this.notifyChanges();
+  }
+
+  set handlingRemoteChange(value) {
+    if (this.handlingRemoteChange === value) {
+      return;
+    }
+    this._handlingRemoteChange = value;
+    console.log("remote change", value, this.syncing || this.handlingLocalChange || this.handlingRemoteChange);
+    this.emit("syncing", this.syncing || this.handlingLocalChange || this.handlingRemoteChange);
+    this.notifyChanges();
+  }
+
+  set syncing(value) {
+    if (this.syncing === value) {
+      return;
+    }
+    this._syncing = value;
+    console.log("syncing", this.handlingChanges);
+    this.emit("syncing", this.handlingChanges);
+    this.notifyChanges();
+  }
+
+  get syncing() {
+    return this._syncing;
+  }
+
+  get handlingRemoteChange() {
+    return this._handlingRemoteChange;
+  }
+
+  get handlingLocalChange() {
+    return this._handlingLocalChange;
+  }
+
+  get handlingChanges () {
+    return this.syncing || this.handlingLocalChange || this.handlingRemoteChange;
   }
 
   get running() {
@@ -183,6 +231,7 @@ class Sync extends EventEmitter {
     } catch (err) {
       log("Error when watching changes...");
       this.watchingChanges = false;
+      this.handlingRemoteChange = false;
 
       /* For the unhandledRejection handler */
       err.syncObject = this;
@@ -202,6 +251,8 @@ class Sync extends EventEmitter {
   async handleChanges() {
 
     while((this.changesToExecute||[]).length > 0 && !this.closed) {
+      this.handlingRemoteChange = true;
+
       let nextChange = this.changesToExecute.shift();
       if (await this.handleChange(nextChange)) {
         await this.save();
@@ -209,6 +260,7 @@ class Sync extends EventEmitter {
         this.changesSinceSave += 1;
       }
     }
+    this.handlingRemoteChange = false;
 
     /* Notify user of changes */
     this.notifyChanges();
@@ -293,8 +345,8 @@ class Sync extends EventEmitter {
   }
 
   async notifyChanges() {
-    if (Date.now() - this.lastChangesUpdated < 3000) {
-      //Give time for other changes to happen, in order to group them all
+    //Give time for other changes to happen, in order to group them all
+    if (this.handlingChanges) {
       return;
     }
     if (!deepEqual({}, this.lastChanges)) {
@@ -961,13 +1013,21 @@ class Sync extends EventEmitter {
       return;
     }
 
-    while (this.queued.length > 0 && !this.closed) {
-      let f = this.queued[0];
-      debug("Awaiting function end--->");
-      await f();
-      this.queued.shift();
-      debug("<---Function ended");
+    try {
+      while (this.queued.length > 0 && !this.closed) {
+        this.handlingLocalChange = true;
+        let f = this.queued[0];
+        debug("Awaiting function end--->");
+        await f();
+        this.queued.shift();
+        debug("<---Function ended");
+      }
+    } catch (err) {
+      this.handlingLocalChange = false;
+      throw err;
     }
+    
+    this.handlingLocalChange = false;
     debug("Queue end");
   }
 
@@ -1015,6 +1075,7 @@ class Sync extends EventEmitter {
       this.loading = false;
     } catch (err) {
       this.loading = false;
+      this.handlingRemoteChange = false;
       throw err;
     }
   }

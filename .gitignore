@@ -45,3 +45,4 @@ public
 # Packaging / releases
 release-builds
 dist
+/package-lock.json

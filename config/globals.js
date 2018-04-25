@@ -12,6 +12,7 @@ class Globals extends EventEmitter {
     this.port = process.env.port || 16409;
     this.connected = true;
     this.syncing = false;
+    this.autorun = false;
   }
 
   updateConnectivity(isConnected) {
@@ -32,6 +33,15 @@ class Globals extends EventEmitter {
     console.log("Updated syncing status");
     this.syncing = syncing;
     this.emit("syncing", syncing);
+  }
+
+  set autorun(val) {
+    this._autorun = val;
+    this.emit('updateAutorun');
+  }
+
+  get autorun() {
+    return this._autorun;
   }
 }
 

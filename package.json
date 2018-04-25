@@ -1,13 +1,14 @@
 {
   "name": "odrive",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Simple google drive client",
   "main": "main.js",
-  "repository": "git@github.com:liberodark/ODrive.git",
+  "repository": "https://github.com/liberodark/ODrive.git",
   "author": "coyotte508 <coyotte508@gmail.com>",
   "license": "GPL-3.0",
   "dependencies": {
     "array-unique": "^0.3.2",
+    "auto-launch": "^5.0.5",
     "body-parser": "^1.18.2",
     "bootstrap": "4.0.0-beta",
     "chokidar": "^1.7.0",
@@ -47,7 +48,7 @@
   "scripts": {
     "lint": "eslint app main.js",
     "test": "npm run lint",
-    "start": "electron  main",
+    "start": "electron main",
     "webpack": "webpack",
     "postinstall": "npm run webpack && electron-builder install-app-deps",
     "pack": "electron-builder --dir",

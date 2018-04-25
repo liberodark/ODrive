@@ -1,8 +1,11 @@
+const os = require('os');
 const Account = require('../core/account');
 const router = require("express").Router();
 const gbs = require('../../config/globals');
 const core = require('../core');
 const ipc = require('electron').ipcMain;
+
+const baseSize = os.platform() === "win32" ? 330 : 270;
 
 router.get('/settings', async (req, res) => {
   let accounts = await core.accounts();
@@ -10,7 +13,7 @@ router.get('/settings', async (req, res) => {
   res.render('settings', {accounts});
 
   /* Hack to set frontend to proper height */
-  gbs.win.setSize(600, 270+80*Math.max(accounts.length,0.5));
+  gbs.win.setSize(650, baseSize+80*Math.max(accounts.length,0.5));
 });
 
 router.get('/connect', (req, res) => {

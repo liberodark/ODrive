@@ -5,9 +5,18 @@ const path = require("path");
 
 const gbs = require('./config/globals');
 const core = require('./app/core');
+const AutoLaunch = require('auto-launch');
+const os = require('os');
 
 //Actual backend
 const backend = require('./app/backend');
+
+const autolauncher = new AutoLaunch({name: "ODrive"});
+
+autolauncher.isEnabled().then(
+  val => gbs.autorun = val,
+  err => console.error("Error when checking auto launch", err)
+)
 
 const logo = path.join(__dirname, 'public', 'images', 'logo.png');
 const logoGrey = path.join(__dirname, 'public', 'images', 'logo-grey.png');
@@ -16,8 +25,8 @@ const logoSync = path.join(__dirname, 'public', 'images', 'logo-sync.png');
 function createWindow () {
   // Create the browser window.
   gbs.win = new BrowserWindow({
-    width: 600,
-    height: 250,
+    width: 650,
+    height: os.platform() === "win32" ? 260 : 250,
     icon: logo,
     webPreferences: {
     },
@@ -41,8 +50,10 @@ function createWindow () {
   });
 }
 
-function generateTray() {
-  gbs.tray = new Tray(logo);
+function generateTrayMenu() {
+  if (!gbs.tray) {
+    return;
+  }
 
   gbs.trayMenu = Menu.buildFromTemplate([
     {
@@ -53,6 +64,18 @@ function generateTray() {
         }
       }
     },
+    {
+      label: 'Launch on startup',
+      click() {
+        if (gbs.autorun) {
+          autolauncher.disable().then(gbs.autorun = false).catch(err => console.error("Error when disabling auto launch", err));
+        } else {
+          autolauncher.enable().then(gbs.autorun = true).catch(err => console.error("Error when enabling auto launch", err));
+        }
+      },
+      type: 'checkbox',
+      checked: gbs.autorun
+    },
     {type: 'separator'},
     {
       label: 'Quit ODrive',
@@ -62,8 +85,17 @@ function generateTray() {
   gbs.tray.setContextMenu(gbs.trayMenu);
 }
 
+function generateTray() {
+  gbs.tray = new Tray(logo);
+
+  generateTrayMenu();
+}
+
 async function launch() {
   generateTray();
+
+  gbs.on("updateAutorun", generateTrayMenu);
+
   await backend.launch();
 
   /* Only display settings on launch if no account already set up */

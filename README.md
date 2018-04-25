@@ -68,6 +68,8 @@ npm start
 
 On Windows, you can make a `.bat` file with `start cmd /k nmp start` that then you can double click to launch the program.
 
+The launch-on-startup functionality is only available on bundled releases. See the **Deployment** section.
+
 ## Testing
 
 To make sure the code is ok and run some sanity checks on it:

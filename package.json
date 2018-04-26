@@ -59,7 +59,7 @@
   },
   "build": {
     "appId": "com.electron.odrive",
-    "productName": "Open Drive",
+    "productName": "OpenDrive",
     "files": [
       "!dist",
       "!release-builds"

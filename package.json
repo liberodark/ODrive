@@ -67,11 +67,17 @@
     "linux": {
       "category": "Archiving",
       "target": [
-        "AppImage"
+        "AppImage",
+        "snap"
       ]
     },
     "appImage": {
       "systemIntegration": "doNotAsk"
+    },
+    "snap": {
+      "grade": "stable",
+      "confinement": "classic",
+      "summary": "This is a Linux GUI client for Google Drive."
     },
     "win": {
       "target": [

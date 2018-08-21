@@ -34,8 +34,8 @@
   "devDependencies": {
     "copy-webpack-plugin": "^4.1.0",
     "css-loader": "^0.28.7",
-    "electron": "^1.7.13",
-    "electron-builder": "^19.52.1",
+    "electron": "^2.0.0",
+    "electron-builder": "^20.11.1",
     "electron-packager": "^10.1.0",
     "eslint": "^4.8.0",
     "extract-text-webpack-plugin": "^3.0.1",

@@ -16,7 +16,7 @@ const autolauncher = new AutoLaunch({name: "ODrive"});
 autolauncher.isEnabled().then(
   val => gbs.autorun = val,
   err => console.error("Error when checking auto launch", err)
-)
+);
 
 const logo = path.join(__dirname, 'public', 'images', 'logo.png');
 const logoGrey = path.join(__dirname, 'public', 'images', 'logo-grey.png');

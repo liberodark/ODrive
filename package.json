@@ -1,6 +1,6 @@
 {
   "name": "odrive",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Simple google drive client",
   "main": "main.js",
   "repository": "https://github.com/liberodark/ODrive.git",
@@ -36,8 +36,8 @@
     "css-loader": "^0.28.7",
     "electron": "^2.0.8",
     "electron-builder": "^20.11.1",
-    "electron-packager": "^10.1.0",
-    "eslint": "^4.8.0",
+    "electron-packager": "^12.1.1",
+    "eslint": "^5.4.0",
     "extract-text-webpack-plugin": "^3.0.1",
     "node-sass": "^4.9.3",
     "resolve-url-loader": "^2.1.0",

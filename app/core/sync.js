@@ -367,9 +367,14 @@ class Sync extends EventEmitter {
   }
 
   noChange(oldInfo, newInfo) {
+    if (newInfo.md5Checksum != oldInfo.md5Checksum) {
+      return false;
+    }
+    /* NOT WORKING 
     if (newInfo.modifiedTime > oldInfo.modifiedTime) {
       return false;
     }
+    */
     if (oldInfo.name != newInfo.name) {
       return false;
     }

@@ -295,7 +295,7 @@ class Sync extends EventEmitter {
     let oldInfo = this.fileInfo[change.fileId];
     await this.storeFileInfo(newInfo);
 
-    if (this.noChange(newInfo, oldInfo)) {
+    if (this.noChange(oldInfo, newInfo)) {
       log("Same main info, ignoring change for file ", newInfo.name);
       /* Nothing happened */
       return false;

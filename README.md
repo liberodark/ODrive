@@ -111,6 +111,9 @@ npm run release-windows dir # or zip, 7zip, tar.xz, tar.7z, ...
 
 This will create a folder in `dist` that you can just copy to a Windows machine.
 
+For help the project !
+https://www.patreon.com/odrive
+
 ## License
 
 [GPL v3](LICENSE.md)

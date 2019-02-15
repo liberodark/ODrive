@@ -5,6 +5,17 @@
   <b>Sync your files and folders simply</b>
 </p>
 
+</p>
+<p align="center">
+  <a href="https://www.patreon.com/odrive">
+	<img alt="Patreon" src="https://c5.patreon.com/external/logo/become_a_patron_button.png" height="50" />
+</a>
+
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3XL3UN5WFNW2Y&source=url">
+	<img src="https://avaazimages.s3.amazonaws.com/paypal_donate_button.jpg" height="50"  />
+</a>
+</p>
+
 # ODrive
 
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**
@@ -110,9 +121,6 @@ npm run release-windows dir # or zip, 7zip, tar.xz, tar.7z, ...
 ```
 
 This will create a folder in `dist` that you can just copy to a Windows machine.
-
-For help the project !
-https://www.patreon.com/odrive
 
 ## License
 

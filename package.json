@@ -24,7 +24,7 @@
     "jquery": "^3.2.1",
     "md5-file": "^4.0.0",
     "mkdirp-promise": "^5.0.1",
-    "morgan": "^1.9.0",
+    "morgan": "^1.9.1",
     "nedb-promise": "^2.0.1",
     "node-notifier": "^5.1.2",
     "popper.js": "^1.14.4",

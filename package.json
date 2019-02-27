@@ -15,7 +15,7 @@
     "command-line-args": "^5.0.2",
     "deep-equal": "^1.0.1",
     "delay": "^3.1.0",
-    "ejs": "^2.5.7",
+    "ejs": "^2.5.8",
     "express": "^4.16.1",
     "file-loader": "^2.0.0",
     "font-awesome": "^4.7.0",

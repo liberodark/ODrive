@@ -50,7 +50,7 @@ parts:
       - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libappindicator*.so*
       - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libindicator*.so*
 
-  simplenote:
+  odrive:
     plugin: nil
     override-build: |
       set -x

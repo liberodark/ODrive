@@ -28,6 +28,7 @@ This is a GUI client for Google Drive on linux application based on the https://
 
 - Linux (most distros)
 - Arch Linux (https://aur.archlinux.org/packages/odrive-bin/)
+- Snap ```sudo snap install --edge odrive```
 - macOS 10.9 and later
 - Microsoft Windows 7 and later
 

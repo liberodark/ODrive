@@ -1,26 +1,118 @@
 name: odrive
-version: native
+version: latest
 summary: Google Drive GUI for Windows / Mac / Linux
 description: |
         This is a GUI client for Google Drive on linux application based on the https://electron.atom.io/.
+        
+architectures:
+  - build-on: amd64
+  - build-on: i386
 
-grade: devel 
-confinement: strict 
+grade: stable
+confinement: classic
+
+plugs:
+  gnome-3-26-1604:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-26-1604
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+
+parts:
+  gnome:
+    plugin: nil
+    build-packages:
+      - software-properties-common
+    override-pull: |
+      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
+      apt -y update
+      apt -y upgrade
+  libappindicator:
+    plugin: nil
+    after:
+      - gnome
+    stage-packages:
+      - libappindicator3-1
+    build-attributes:
+      - no-system-libraries
+    prime:
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdbusmenu*.so*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libappindicator*.so*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libindicator*.so*
+
+  simplenote:
+    plugin: nil
+    override-build: |
+      set -x
+      snapcraftctl build
+      # Get the latest releases json
+      echo "Get GitHub releases..."
+      wget --quiet https://api.github.com/repos/liberodark/ODrive/releases/latest -O releases.json
+      # Get the version from the tag_name and the download URL.
+      VERSION=$(jq . releases.json | grep tag_name | cut -d'"' -f4 | sed s'/v//')
+      DEB_URL=$(cat releases.json | jq -r ".assets[] | select(.name | test(\"deb\")) | .browser_download_url"| grep $(dpkg --print-architecture))
+      DEB=$(basename "${DEB_URL}")
+      echo "Downloading ${DEB_URL}..."
+      wget --quiet "${DEB_URL}" -O "${SNAPCRAFT_PART_INSTALL}/${DEB}"
+      echo "Unpacking ${DEB}..."
+      dpkg -x "${SNAPCRAFT_PART_INSTALL}/${DEB}" ${SNAPCRAFT_PART_INSTALL}
+      rm -f releases.json 2>/dev/null
+      rm -f "${SNAPCRAFT_PART_INSTALL}/${DEB}" 2>/dev/null
+      snapcraftctl set-version "$VERSION"
+      sed -i 's|Icon=odrive|Icon=/usr/share/icons/hicolor/256x256/apps/odrive\.png|' ${SNAPCRAFT_PART_INSTALL}/usr/share/applications/odrive.desktop
+    after:
+      - gnome
+      - desktop-gnome-platform
+      - libappindicator
+    build-attributes:
+      - no-system-libraries
+    build-packages:
+      - dpkg
+      - jq
+      - wget
+    stage-packages:
+      - libasound2
+      - libgconf2-4
+      - libnspr4
+      - libnss3
+      - libxss1
 
 apps:
-  stacer:
-     command: odrive
-     plugs: [network, home, unity7]
-                            
-parts:
   odrive:
-    plugin: nil 
-    source: .
-    build-packages:
-        - nodejs
-    after:
-        - linuxdeployqt
-    install: |
-         ./deploy.sh
-         ./install.sh
-  
+    command: bin/desktop-launch $SNAP/opt/OpenDrive/odrive
+    desktop: usr/share/applications/odrive.desktop
+    environment:
+      # Correct the TMPDIR path for Chromium Framework/Electron to
+      # ensure libappindicator has readable resources
+      TMPDIR: $XDG_RUNTIME_DIR
+      # Coerce XDG_CURRENT_DESKTOP to Unity so that App Indicators
+      # are used and do not fall back to Notification Area applets
+      # or disappear completely.
+      XDG_CURRENT_DESKTOP: Unity
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - browser-support
+      - cups-control
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - home
+      - mount-observe
+      - network
+      - opengl
+      - pulseaudio
+      - unity7
+      - wayland
+- x11

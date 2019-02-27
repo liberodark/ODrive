@@ -21,7 +21,7 @@
     "font-awesome": "^4.7.0",
     "fs-extra": "^7.0.0",
     "googleapis": "^22.2.0",
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "md5-file": "^4.0.0",
     "mkdirp-promise": "^5.0.1",
     "morgan": "^1.9.1",

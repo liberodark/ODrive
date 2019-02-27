@@ -8,7 +8,7 @@ architectures:
   - build-on: amd64
 
 grade: stable
-confinement: classic
+confinement: strict
 
 plugs:
   gnome-3-26-1604:

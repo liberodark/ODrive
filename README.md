@@ -25,6 +25,7 @@ This is a GUI client for Google Drive on linux application based on the https://
 ## Supported Operating Systems
 
 [![Snap Status](https://build.snapcraft.io/badge/liberodark/ODrive.svg)](https://build.snapcraft.io/user/liberodark/ODrive)
+![Travis Status](https://travis-ci.org/liberodark/ODrive.svg?branch=master)
 
 - Linux (most distros)
 - Arch Linux (https://aur.archlinux.org/packages/odrive-bin/)

@@ -77,7 +77,11 @@ parts:
       - jq
       - wget
     stage-packages:
+      - libasound2
       - libgconf2-4
+      - libnspr4
+      - libnss3
+      - libxss1
 
 apps:
   odrive:

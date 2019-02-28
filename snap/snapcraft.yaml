@@ -101,7 +101,6 @@ apps:
       - gsettings
       - home
       - mount-observe
-      - remove-media
       - network
       - opengl
       - unity7

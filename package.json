@@ -32,7 +32,7 @@
     "tether": "^1.4.5"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^4.5.2",
+    "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^0.28.7",
     "electron": "^4.0.6",
     "electron-builder": "^20.38.5",

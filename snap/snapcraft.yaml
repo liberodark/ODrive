@@ -10,9 +10,33 @@ architectures:
 grade: stable
 confinement: strict
 
+plugs:
+  gnome-3-26-1604:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-26-1604
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+
 parts:
+  gnome:
+    plugin: nil
+    build-packages:
+      - software-properties-common
+    override-pull: |
+      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
+      apt -y update
+      apt -y upgrade
   libappindicator:
     plugin: nil
+    after:
+      - gnome
     stage-packages:
       - libappindicator3-1
     build-attributes:
@@ -43,6 +67,8 @@ parts:
       snapcraftctl set-version "$VERSION"
       sed -i 's|Icon=odrive|Icon=/usr/share/icons/hicolor/256x256/apps/odrive\.png|' ${SNAPCRAFT_PART_INSTALL}/usr/share/applications/odrive.desktop
     after:
+      - gnome
+      - desktop-gnome-platform
       - libappindicator
     build-attributes:
       - no-system-libraries
@@ -75,11 +101,9 @@ apps:
       - gsettings
       - home
       - mount-observe
+      - remove-media
       - network
       - opengl
       - unity7
       - wayland
       - x11
-      - read
-      - write
-      - removable-media

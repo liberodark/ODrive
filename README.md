@@ -31,6 +31,7 @@
 - Linux (most distros)
 - Arch Linux (https://aur.archlinux.org/packages/odrive-bin/)
 - Snap ```sudo snap install --edge odrive```
+- Flatpak (https://github.com/flathub/io.github.liberodark.OpenDrive)
 - macOS 10.9 and later
 - Microsoft Windows 7 and later
 

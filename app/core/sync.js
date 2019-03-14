@@ -263,6 +263,8 @@ class Sync extends EventEmitter {
     this.handlingRemoteChange = false;
 
     /* Notify user of changes */
+    this.account.updateUserInfo();
+
     this.notifyChanges();
 
     /* Save regularly if there are changes, even if they're worthless. At least it updates the change token. */

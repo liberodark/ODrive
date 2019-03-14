@@ -50,14 +50,14 @@ function createWindow () {
   });
 }
 
-function generateTrayMenu() {
+async function generateTrayMenu() {
   if (!gbs.tray) {
     return;
   }
 
-  gbs.trayMenu = Menu.buildFromTemplate([
+  let template = [
     {
-      label: 'Preferences...',
+      label: 'Preferences',
       click () {
         if (gbs.win === null) {
           createWindow();
@@ -77,11 +77,18 @@ function generateTrayMenu() {
       checked: gbs.autorun
     },
     {type: 'separator'},
-    {
-      label: 'Quit ODrive',
-      click () {process.exit(0);}
-    }
-  ]);
+  ];
+
+  accounts = await core.accounts();
+  if(accounts[0] && accounts[0].document) {
+      account = accounts[0].document;
+      template[template.length] = {label: account.storageUsedPercent + " % of " + account.storageLimitGiB + " GiB used", enabled: false };
+      template[template.length] = {type: 'separator'};
+  }
+
+  template[template.length] = { label: 'Quit ODrive', click () {process.exit(0);} };
+
+  gbs.trayMenu = Menu.buildFromTemplate(template);
   gbs.tray.setContextMenu(gbs.trayMenu);
 }
 
@@ -95,6 +102,7 @@ async function launch() {
   generateTray();
 
   gbs.on("updateAutorun", generateTrayMenu);
+  gbs.on("updateTray", generateTrayMenu);
 
   await backend.launch();
 

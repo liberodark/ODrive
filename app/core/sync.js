@@ -1117,6 +1117,7 @@ class Sync extends EventEmitter {
 
       this.watchChanges();
       this.saving = false;
+      globals.updateSyncing(this.syncing);
     } catch(err) {
       this.saving = false;
       throw err;

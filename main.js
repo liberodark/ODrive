@@ -83,6 +83,7 @@ async function generateTrayMenu() {
   if(accounts[0] && accounts[0].document) {
       account = accounts[0].document;
       template[template.length] = {label: account.storageUsedPercent + " % of " + account.storageLimitGiB + " GiB used", enabled: false };
+      template[template.length] = {label: (gbs.syncing) ? "Syncing" : "No changes", enabled: false };
       template[template.length] = {type: 'separator'};
   }
 
@@ -133,6 +134,7 @@ function updateTrayIcon() {
   console.log("Updating tray icon, connected: ", gbs.connected, "syncing: ", gbs.syncing);
   let path = gbs.connected ? (gbs.syncing ? logoSync : logo) : logoGrey;
   gbs.tray.setImage(path);
+  generateTrayMenu();
 }
 
 app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);

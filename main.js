@@ -79,9 +79,9 @@ async function generateTrayMenu() {
     {type: 'separator'},
   ];
 
-  accounts = await core.accounts();
+  let accounts = await core.accounts();
   if(accounts[0] && accounts[0].document) {
-      account = accounts[0].document;
+      let account = accounts[0].document;
       template[template.length] = {label: account.storageUsedPercent + " % of " + account.storageLimitGiB + " GiB used", enabled: false };
       template[template.length] = {label: (gbs.syncing) ? "Syncing" : "No changes", enabled: false };
       template[template.length] = {type: 'separator'};

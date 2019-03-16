@@ -50,14 +50,14 @@ function createWindow () {
   });
 }
 
-function generateTrayMenu() {
+async function generateTrayMenu() {
   if (!gbs.tray) {
     return;
   }
 
-  gbs.trayMenu = Menu.buildFromTemplate([
+  let template = [
     {
-      label: 'Preferences...',
+      label: 'Preferences',
       click () {
         if (gbs.win === null) {
           createWindow();
@@ -77,11 +77,19 @@ function generateTrayMenu() {
       checked: gbs.autorun
     },
     {type: 'separator'},
-    {
-      label: 'Quit ODrive',
-      click () {process.exit(0);}
-    }
-  ]);
+  ];
+
+  let accounts = await core.accounts();
+  if(accounts[0] && accounts[0].document) {
+      let account = accounts[0].document;
+      template[template.length] = {label: account.storageUsedPercent + " % of " + account.storageLimitGiB + " GiB used", enabled: false };
+      template[template.length] = {label: (gbs.syncing) ? "Syncing" : "No changes", enabled: false };
+      template[template.length] = {type: 'separator'};
+  }
+
+  template[template.length] = { label: 'Quit ODrive', click () {process.exit(0);} };
+
+  gbs.trayMenu = Menu.buildFromTemplate(template);
   gbs.tray.setContextMenu(gbs.trayMenu);
 }
 
@@ -95,6 +103,7 @@ async function launch() {
   generateTray();
 
   gbs.on("updateAutorun", generateTrayMenu);
+  gbs.on("updateTray", generateTrayMenu);
 
   await backend.launch();
 
@@ -125,6 +134,7 @@ function updateTrayIcon() {
   console.log("Updating tray icon, connected: ", gbs.connected, "syncing: ", gbs.syncing);
   let path = gbs.connected ? (gbs.syncing ? logoSync : logo) : logoGrey;
   gbs.tray.setImage(path);
+  generateTrayMenu();
 }
 
 app.commandLine.appendSwitch('host-rules', `MAP odrive.io 127.0.0.1:${backend.port}`);

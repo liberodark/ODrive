@@ -21,7 +21,6 @@
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**
 
 - This is a GUI client for Google Drive on linux application based on the https://electron.atom.io/.
-- Please look this question : https://github.com/liberodark/ODrive/issues/69
 
 ## Supported Operating Systems
 

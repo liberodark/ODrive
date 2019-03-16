@@ -15,10 +15,6 @@ class Globals extends EventEmitter {
     this.autorun = false;
   }
 
-  updateTray() {
-	  this.emit('updateTray');
-  }
-
   updateConnectivity(isConnected) {
     if (isConnected == this.connected) {
       return false;

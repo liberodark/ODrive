@@ -40,7 +40,6 @@ router.get('/authCallback', async (req, res, next) => {
 
     await account.handleCode(code);
     core.addAccount(account);
-    gbs.updateTray();
 
     res.redirect("/settings");
   } catch(err) {

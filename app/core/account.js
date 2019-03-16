@@ -7,7 +7,7 @@ const Sync = require('./sync');
 const globals = require('../../config/globals');
 const OAuth2 = google.auth.OAuth2;
 
-const toSave = ["email", "about", "tokens", "folder", "saveTime", "storageUsed", "storageLimit", "storageLimitGiB", "storageUsedPercent"];
+const toSave = ["email", "about", "tokens", "folder", "saveTime"];
 
 class Account extends EventEmitter {
   constructor(doc) {
@@ -56,18 +56,17 @@ class Account extends EventEmitter {
 
   /* Update user info (email, storage etc.) using oauth tokens */
   updateUserInfo() {
+    console.log("Updating account info");
     return new Promise((resolve, reject) => {
-      this.drive.about.get({q: "user.me == true", fields: "user, storageQuota"}, (err, about) => {
+      this.drive.about.get({q: "user.me == true", fields: "user"}, (err, about) => {
+        //console.log("User info", about);
+
         if (err) {
           return reject(err);
         }
 
         this.about = about;
         this.email = about.user.emailAddress;
-        this.storageUsed = about.storageQuota.usageInDrive;
-        this.storageLimit = about.storageQuota.limit;
-        this.storageLimitGiB = (about.storageQuota.limit / 1073741824).toFixed(1);
-        this.storageUsedPercent = (this.storageUsed / this.storageLimit * 100).toFixed(2);
 
         this.save().then(resolve, reject);
       });
@@ -94,7 +93,7 @@ class Account extends EventEmitter {
       this.id = this.document._id;
     }
 
-    globals.updateTray();
+    console.log("Saved account!");
   }
 
   async erase() {
@@ -107,8 +106,6 @@ class Account extends EventEmitter {
     if (this.id) {
       await globals.db.remove({_id: this.id});
     }
-
-    globals.updateTray();
   }
 
   load(doc) {

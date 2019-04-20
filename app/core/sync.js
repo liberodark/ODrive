@@ -531,9 +531,14 @@ class Sync extends EventEmitter {
       delete this.paths[src];
     }
 
-    let rmRemotely = () => new Promise((resolve, reject) => {
-      log("Deleting file on drive.", id);
-      this.drive.files.delete({fileId: id}, (err, result) => {
+    let moveToTrash = () => new Promise((resolve, reject) => {
+      log("Updating file to drive.");
+      this.drive.files.update({
+        resource: {
+          'trashed': true
+        },
+        fileId: id
+      }, (err, result) => {
         if (err) {
           error(err);
           return reject(err);
@@ -543,9 +548,8 @@ class Sync extends EventEmitter {
       });
     });
 
-    await this.tryTwice(rmRemotely);
-
-    this.logChange("removed", true);
+    await this.tryTwice(moveToTrash);
+    this.logChange("move to trash", true);
   }
 
   async onLocalDirAdded(src) {

@@ -47,19 +47,16 @@ router.get('/authCallback', async (req, res, next) => {
   }
 });
 
-/* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
-function web() {
-  return () => {
+ipc.on('permanently-delete-setting', async (event, { accountId, permanentlyDeleteSetting}) => {
+  /* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
+  let web = () => {
     if (gbs.win) {
       return gbs.win.webContents;
-    }
-    else {
+    } else {
       return { send: () => { } };
     }
   };
-}
 
-ipc.on('permanently-delete-setting', async (event, { accountId, permanentlyDeleteSetting}) => {
   try {
     let account = await core.getAccountById(accountId);
     account.permanentlyDeleteSetting = permanentlyDeleteSetting;
@@ -71,6 +68,15 @@ ipc.on('permanently-delete-setting', async (event, { accountId, permanentlyDelet
 });
 
 ipc.on('start-sync', async (event, {accountId, folder}) => {
+  /* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
+  let web = () => {
+    if (gbs.win) {
+      return gbs.win.webContents;
+    } else {
+      return { send: () => { } };
+    }
+  };
+  
   try {
     let account = await core.getAccountById(accountId);
     account.folder = folder;

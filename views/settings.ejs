@@ -2,7 +2,7 @@
 let simplifiedAccounts = [];
 
 for (let account of accounts) {
-  simplifiedAccounts.push({id: account.id, folder: account.folder});
+  simplifiedAccounts.push({id: account.id, folder: account.folder, permanentlyDeleteSetting: account.permanentlyDeleteSetting});
 }
 %>
 
@@ -56,6 +56,15 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
       <span class="custom-file-control folder" id="filePath"><%- (accounts[0]||{folder:"Choose folder..."}).folder %></span>
     </label>
   </div>
+</section>
+
+<hr/>
+
+<section>
+    <div class="custom-control custom-switch">
+      <input type="checkbox" class="custom-control-input" id="customSwitch1" onclick="permanentlyDeleteSetting(accounts[0], this.checked)" <%- (accounts[0]||{}).permanentlyDeleteSetting ? "checked" : ""%>>
+      <label class="custom-control-label" for="customSwitch1">Permanently delete files or folders</label>
+    </div>
 </section>
 
 <hr/>

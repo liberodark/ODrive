@@ -16,6 +16,12 @@ function UIBeginSyncing() {
   $("#synchronize-text").text('Synchronizing...');
 }
 
+// eslint-disable-next-line no-unused-vars
+function permanentlyDeleteSetting(account, checked) {
+  account.permanentlyDeleteSetting = checked;
+  ipc.send('permanently-delete-setting', { accountId: account.id, permanentlyDeleteSetting: checked });
+}
+
 /* React to folder change. Only change folder in current window, will send to backend when beginning synchronization */
 // eslint-disable-next-line no-unused-vars
 function handleUIChangeFolder(account) {

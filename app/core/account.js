@@ -7,7 +7,7 @@ const Sync = require('./sync');
 const globals = require('../../config/globals');
 const OAuth2 = google.auth.OAuth2;
 
-const toSave = ["email", "about", "tokens", "folder", "saveTime"];
+const toSave = ["email", "about", "tokens", "folder", "saveTime", "permanentlyDeleteSetting"];
 
 class Account extends EventEmitter {
   constructor(doc) {

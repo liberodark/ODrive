@@ -1,7 +1,16 @@
 language: node_js
 node_js:
-  - "7"
-  - "8"
   - "9"
   - "10"
   - "11"
+  - "stable"
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  file_glob: true
+  file:
+    - "dist/odrive_*_amd64.deb"
+    - "dist/odrive_*_amd64.snap"
+    - "dist/OpenDrive.*.AppImage"
+    - "dist/OpenDrive.Setup.*.exe"

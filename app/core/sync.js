@@ -531,6 +531,31 @@ class Sync extends EventEmitter {
       delete this.paths[src];
     }
 
+    if (this.account.permanentlyDeleteSetting) {
+      await this.permanentlyDelete(id);
+    } else {
+      await this.moveToTrash(id);
+   }
+
+  }
+
+  async permanentlyDelete(id) {
+    let rmRemotely = () => new Promise((resolve, reject) => {
+      log("Deleting file on drive.", id);
+      this.drive.files.delete({ fileId: id }, (err, result) => {
+        if (err) {
+          error(err);
+          return reject(err);
+        }
+        verbose("Result", result);
+        resolve(result);
+      });
+    });
+    await this.tryTwice(rmRemotely);
+    this.logChange("removed", true);
+  }
+
+  async moveToTrash(id) {
     let moveToTrash = () => new Promise((resolve, reject) => {
       log("Updating file to drive.");
       this.drive.files.update({
@@ -547,7 +572,6 @@ class Sync extends EventEmitter {
         resolve(result);
       });
     });
-
     await this.tryTwice(moveToTrash);
     this.logChange("move to trash", true);
   }

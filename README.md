@@ -115,7 +115,7 @@ npm run release-linux deb
 ```
 For RPM
 ```
-sudo yum install rpm-build
+sudo yum install rpm-build -y
 npm run release-linux rpm
 ```
 

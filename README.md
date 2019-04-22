@@ -108,8 +108,14 @@ npm run release-mac
 ```
 
 To create a different format, like a deb or rpm package for example:
+
+For DEB
 ```bash
 npm run release-linux deb
+```
+For RPM
+```
+sudo yum install rpm-build
 npm run release-linux rpm
 ```
 

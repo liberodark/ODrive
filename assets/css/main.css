@@ -433,3 +433,11 @@ template {
 .landing-header .call-to-action a {
     text-decoration: none;
 }
+
+.landing-header .logo {
+    display: inline-grid
+}
+
+.landing-header .logo img {
+    margin: auto;
+}

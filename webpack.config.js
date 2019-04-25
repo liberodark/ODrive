@@ -4,13 +4,13 @@ const webpack = require('webpack');
 const path = require("path");
 
 module.exports = {
-  context: path.join(__dirname, 'app/assets'),
+  context: path.resolve(__dirname, 'app/assets'),
   entry: {
     //teambuilder: "./javascript/teambuilder.js",
     frontend: "./javascript/index.js"
   },
   output: {
-    path: path.join(__dirname, "public/"),
+    path: path.resolve(__dirname, "public/"),
     filename: "javascript/[name].js"
   },
   devtool: "source-map",
@@ -64,7 +64,7 @@ module.exports = {
       from: "javascript/settings.js", to: "javascript"
     }]),
     new webpack.ProvidePlugin({
-      $: 'jquery', jquery: 'jquery', jQuery: 'jquery' ,
+      $: 'jquery', jquery: 'jquery', jQuery: 'jquery',
       "window.Tether": 'tether', "Popper": "popper.js"
     }),
     new MiniCssExtractPlugin("stylesheets/styles.css")
@@ -72,4 +72,4 @@ module.exports = {
   externals: {
     jquery: 'jQuery'
   }
-}
+};

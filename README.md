@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/djmemo/ODrive.svg?branch=master)](https://travis-ci.org/djmemo/ODrive)
+[![dependencies Status](https://david-dm.org/djmemo/odrive/status.svg?theme=shields.io)](https://david-dm.org/djmemo/odrive)
+[![devDependency Status](https://david-dm.org/djmemo/odrive/dev-status.svg?theme=shields.io)](https://david-dm.org/djmemo/odrive#info=devDependencies)
+
 <p align="center">
     <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/public/images/logo.png" width="500">    
 </p>

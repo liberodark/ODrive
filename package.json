@@ -39,7 +39,6 @@
     "electron-packager": "^13.1.1",
     "eslint": "^5.16.0",
     "mini-css-extract-plugin": "^0.6.0",
-    "node-sass": "^4.11.0",
     "resolve-url-loader": "^3.1.0",
     "style-loader": "^0.23.1",
     "url-loader": "^1.1.2",

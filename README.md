@@ -26,7 +26,7 @@
 
 [![Snap Status](https://build.snapcraft.io/badge/liberodark/ODrive.svg)](https://build.snapcraft.io/user/liberodark/ODrive)
 ![Travis Status](https://travis-ci.org/liberodark/ODrive.svg?branch=master)
-[![dependencies Status](https://david-dm.org/liberodark/odrive/status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive)
+[![Dependencies Status](https://david-dm.org/liberodark/odrive/status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive)
 [![devDependency Status](https://david-dm.org/liberodark/odrive/dev-status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive#info=devDependencies)
 
 - Linux (most distros)

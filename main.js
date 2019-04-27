@@ -29,6 +29,7 @@ function createWindow () {
     height: os.platform() === "win32" ? 260 : 250,
     icon: logo,
     webPreferences: {
+      nodeIntegration: true
     },
     'use-content-size': true
   });

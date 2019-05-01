@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/djmemo/ODrive.svg?branch=master)](https://travis-ci.org/djmemo/ODrive)
+[![dependencies Status](https://david-dm.org/djmemo/odrive/status.svg?theme=shields.io)](https://david-dm.org/djmemo/odrive)
+[![devDependency Status](https://david-dm.org/djmemo/odrive/dev-status.svg?theme=shields.io)](https://david-dm.org/djmemo/odrive#info=devDependencies)
+
 <p align="center">
     <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/public/images/logo.png" width="500">    
 </p>
@@ -108,8 +112,14 @@ npm run release-mac
 ```
 
 To create a different format, like a deb or rpm package for example:
+
+For DEB
 ```bash
 npm run release-linux deb
+```
+For RPM
+```
+sudo yum install rpm-build -y
 npm run release-linux rpm
 ```
 

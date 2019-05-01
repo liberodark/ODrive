@@ -123,6 +123,60 @@ class Sync extends EventEmitter {
     this.changesSinceSave += 1;
   }
 
+  formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  async ParallelMapFlow(files, notifyCallback) {
+    let notify = notifyCallback || (() => { });
+    let counter = 0;
+    let ignored = 0;
+    let fileSize = 0;
+
+    while (files.length > 0) {
+      console.log("################");
+      console.log("files.length :", files.length);
+      console.log("################");
+      var fileQueue = [];
+      for (let i = 0; i < 10; i++) {
+        if (files.length >= 1) {
+          fileQueue.push(files.shift());
+        }else{
+          break;
+        }
+      }
+
+      let results = fileQueue.map(
+        async (file) => {
+          if (this.shouldIgnoreFile(file)) {
+            ignored += 1;
+            notify(`${counter} files downloaded, ${ignored} files ignored...`);
+          } else {
+            counter += 1;
+            if (Number(file.size) >= 0) {
+              fileSize += Number(file.size);
+            }
+            console.log(`Downloading #${counter} ${file.name}`);
+            // log("Downloading ", file);
+            await this.downloadFile(file);
+            return Number(file.size);
+          }
+        }
+      );
+      for (const result of results) {
+        await result;
+      }
+      notify(`${counter} (${this.formatBytes(fileSize)}) files downloaded, ${ignored} files ignored...`);
+    }
+ 
+    return { counter, ignored, fileSize};
+  }
+
   async start(notifyCallback) {
     await this.finishLoading();
 
@@ -143,27 +197,9 @@ class Sync extends EventEmitter {
       let files = await this.downloadFolderStructure("root");
       await this.computePaths();
 
-      let counter = 0;
-      let ignored = 0;
-
-      for (let file of files) {
-        if (this.shouldIgnoreFile(file)) {
-          /* Not a stored file, no need...
-            Will handle google docs later.
-          */
-          ignored += 1;
-
-          notify(`${counter} files downloaded, ${ignored} files ignored...`);
-          continue;
-        }
-
-        log("Downloading ", file);
-        counter +=1;
-        await this.downloadFile(file);
-        notify(`${counter} files downloaded, ${ignored} files ignored...`);
-      }
-
-      notify(`All done! ${counter} files downloaded and ${ignored} ignored.`);
+      let result = await this.ParallelMapFlow(files, notifyCallback);
+      console.log("result :", result);
+      notify(`All done! ${result.counter} (${this.formatBytes(result.fileSize)}) files downloaded and ${result.ignored} ignored.`);
       this.syncing = false;
       this.synced = true;
 
@@ -253,11 +289,27 @@ class Sync extends EventEmitter {
     while((this.changesToExecute||[]).length > 0 && !this.closed) {
       this.handlingRemoteChange = true;
 
-      let nextChange = this.changesToExecute.shift();
-      if (await this.handleChange(nextChange)) {
-        await this.save();
-      } else {
-        this.changesSinceSave += 1;
+      // let nextChange = this.changesToExecute.shift();
+
+      let nextChangeQueue = [];
+      for (let i = 0; i < 10; i++) {
+        if (this.changesToExecute.length >= 1) {
+          nextChangeQueue.push(this.changesToExecute.shift());
+        }else{
+          break;
+        }
+      }
+      let results = nextChangeQueue.map(
+        async (nextChange) => {
+          if (await this.handleChange(nextChange)) {
+            await this.save();
+          } else {
+            this.changesSinceSave += 1;
+          }
+        }
+      );
+      for (const result of results) {
+        await result;
       }
     }
     this.handlingRemoteChange = false;
@@ -726,7 +778,7 @@ class Sync extends EventEmitter {
     let counter = 1;
     while(nextPageToken) {
       /* Try avoiding triggering antispam filters on Google's side, given the quantity of data */
-      await delay(500);
+      await delay(20);
 
       let data = await this.filesListChunk({pageToken: nextPageToken, q});
       nextPageToken = data.nextPageToken;

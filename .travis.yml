@@ -10,5 +10,7 @@ matrix:
         env: DIST=--windows
       - os: osx
         env: DIST=--mac
-after_script:
-  - npm run electron-builder $DIST
+script:
+  - npm run test
+  - npm run postinstall
+  - npm run release-$DIST

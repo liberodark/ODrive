@@ -1,9 +1,17 @@
 language: node_js
 node_js:
-  - "9"
-  - "10"
-  - "11"
   - "stable"
+
+os:
+  - linux
+    env: dist=linux
+  - windows
+    env: dist=windows
+  - osx
+    env: dist=mac
+
+after_script:
+  - npm run electron-builder --$dist
 
 deploy:
   provider: releases

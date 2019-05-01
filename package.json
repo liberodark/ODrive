@@ -11,7 +11,7 @@
     "auto-launch": "^5.0.5",
     "body-parser": "^1.18.3",
     "bootstrap": "4.3.1",
-    "chokidar": "^2.1.5",
+    "chokidar": "^3.0.0",
     "command-line-args": "^5.1.1",
     "deep-equal": "^1.0.1",
     "delay": "^4.2.0",

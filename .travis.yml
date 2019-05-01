@@ -1,18 +1,15 @@
 language: node_js
 node_js:
   - "stable"
-
 os:
   - linux
-    env: dist=linux
+    env: dist=--linux
   - windows
-    env: dist=windows
+    env: dist=--windows
   - osx
-    env: dist=mac
-
+    env: dist=--mac
 after_script:
-  - npm run electron-builder --$dist
-
+  - npm run electron-builder $dist
 deploy:
   provider: releases
   skip_cleanup: true

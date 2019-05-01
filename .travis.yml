@@ -2,12 +2,13 @@ language: node_js
 node_js:
   - "10"
   - "12"
-os:
-  - linux
-    env: DIST=--linux
-  - windows
-    env: DIST=--windows
-  - osx
-    env: DIST=--mac
+matrix:
+    include:
+      - linux
+        env: DIST=--linux
+      - windows
+        env: DIST=--windows
+      - osx
+        env: DIST=--mac
 after_script:
   - npm run electron-builder $DIST

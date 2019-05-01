@@ -4,11 +4,11 @@ node_js:
   - "12"
 matrix:
     include:
-      - linux
+      - os: linux
         env: DIST=--linux
-      - windows
+      - os: windows
         env: DIST=--windows
-      - osx
+      - os: osx
         env: DIST=--mac
 after_script:
   - npm run electron-builder $DIST

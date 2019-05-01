@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-  - "stable"
+  - "10"
+  - "12"
 os:
   - linux
     env: dist=--linux

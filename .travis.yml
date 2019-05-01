@@ -10,12 +10,3 @@ os:
     env: dist=--mac
 after_script:
   - npm run electron-builder $dist
-deploy:
-  provider: releases
-  skip_cleanup: true
-  file_glob: true
-  file:
-    - "dist/odrive_*_amd64.deb"
-    - "dist/odrive_*_amd64.snap"
-    - "dist/OpenDrive.*.AppImage"
-    - "dist/OpenDrive.Setup.*.exe"

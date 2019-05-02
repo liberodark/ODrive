@@ -25,7 +25,7 @@
 ## Supported Operating Systems
 
 [![Snap Status](https://build.snapcraft.io/badge/liberodark/ODrive.svg)](https://build.snapcraft.io/user/liberodark/ODrive)
-![Travis Status](https://travis-ci.org/liberodark/ODrive.svg?branch=master)
+[![Travis Status](https://travis-ci.org/liberodark/ODrive.svg?branch=master)](https://travis-ci.org/liberodark/ODrive)
 [![Dependencies Status](https://david-dm.org/liberodark/odrive/status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive)
 [![devDependency Status](https://david-dm.org/liberodark/odrive/dev-status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive#info=devDependencies)
 

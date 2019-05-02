@@ -139,9 +139,8 @@ class Sync extends EventEmitter {
     let fileSize = 0;
 
     while (files.length > 0) {
-      console.log("################");
-      console.log("files.length :", files.length);
-      console.log("################");
+      await delay(1000);
+
       var fileQueue = [];
       for (let i = 0; i < 10; i++) {
         if (files.length >= 1) {
@@ -162,7 +161,6 @@ class Sync extends EventEmitter {
               fileSize += Number(file.size);
             }
             console.log(`Downloading #${counter} ${file.name}`);
-            // log("Downloading ", file);
             await this.downloadFile(file);
             return Number(file.size);
           }
@@ -198,7 +196,6 @@ class Sync extends EventEmitter {
       await this.computePaths();
 
       let result = await this.ParallelMapFlow(files, notifyCallback);
-      console.log("result :", result);
       notify(`All done! ${result.counter} (${this.formatBytes(result.fileSize)}) files downloaded and ${result.ignored} ignored.`);
       this.syncing = false;
       this.synced = true;

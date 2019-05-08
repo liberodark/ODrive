@@ -139,9 +139,7 @@ class Sync extends EventEmitter {
     let fileSize = 0;
 
     while (files.length > 0) {
-      console.log("################");
-      console.log("files.length :", files.length);
-      console.log("################");
+
       var fileQueue = [];
       for (let i = 0; i < 10; i++) {
         if (files.length >= 1) {
@@ -162,7 +160,7 @@ class Sync extends EventEmitter {
               fileSize += Number(file.size);
             }
             console.log(`Downloading #${counter} ${file.name}`);
-            // log("Downloading ", file);
+            await this.finishLoading();
             await this.downloadFile(file);
             return Number(file.size);
           }
@@ -198,7 +196,6 @@ class Sync extends EventEmitter {
       await this.computePaths();
 
       let result = await this.ParallelMapFlow(files, notifyCallback);
-      console.log("result :", result);
       notify(`All done! ${result.counter} (${this.formatBytes(result.fileSize)}) files downloaded and ${result.ignored} ignored.`);
       this.syncing = false;
       this.synced = true;
@@ -1028,7 +1025,8 @@ class Sync extends EventEmitter {
     let alreadyDownloaded = await fs.exists(savePath) && await md5file(savePath) == fileInfo.md5Checksum;
 
     if (!alreadyDownloaded) {
-      var dest = fs.createWriteStream(savePath);
+      var tmpFile = path.join(this.account.folder, `.${fileInfo.name}.tmp`);
+      var dest = fs.createWriteStream(tmpFile);
 
       await delay(80);
 
@@ -1037,12 +1035,16 @@ class Sync extends EventEmitter {
       await this.tryTwice(() => new Promise((resolve, reject) => {
         this.watcher.ignore(savePath);
         this.drive.files.get({fileId: fileInfo.id, alt: "media"})
-          .on('end', () => resolve())
+          .on('end', async () => {
+            console.log('Done downloading file.');
+            await fs.rename(tmpFile, savePath);
+            resolve();
+          })
           .on('error', err => reject(err))
           .pipe(dest);
       }).catch(async (err) => {
         /* Remove a partial download in case of err, don't want it to be synchronized later on */
-        await fs.remove(dest);
+        await fs.remove(tmpFile);
         throw err;
       }));
       log(`Downloaded ${fileInfo.name}!`);

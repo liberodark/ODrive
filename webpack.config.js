@@ -1,16 +1,17 @@
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const path = require("path");
 
 module.exports = {
-  context: path.join(__dirname, 'app/assets'),
+  mode: 'development',
+  context: path.resolve(__dirname, 'app/assets'),
   entry: {
     //teambuilder: "./javascript/teambuilder.js",
     frontend: "./javascript/index.js"
   },
   output: {
-    path: path.join(__dirname, "public/"),
+    path: path.resolve(__dirname, "public/"),
     filename: "javascript/[name].js"
   },
   devtool: "source-map",
@@ -18,23 +19,22 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: ["css-loader", "resolve-url-loader"],
-          fallback: "style-loader"
-        })
+        use: [
+          { loader: MiniCssExtractPlugin.loader },
+          { loader: "style-loader" },
+          { loader: "css-loader" },
+          { loader: "resolve-url-loader" },
+        ],
       },
       {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
-          use: [{
-            loader: "css-loader"
-          }, {
-            loader: "resolve-url-loader"
-          }, {
-            loader: "sass-loader?sourceMap"
-          }],
-          fallback: "style-loader"
-        })
+        use: [
+          { loader: MiniCssExtractPlugin.loader },
+          { loader: "style-loader" },
+          { loader: "css-loader" },
+          { loader: "resolve-url-loader" },
+          { loader: "sass-loader?sourceMap" },
+        ],
       },
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -65,12 +65,12 @@ module.exports = {
       from: "javascript/settings.js", to: "javascript"
     }]),
     new webpack.ProvidePlugin({
-      $: 'jquery', jquery: 'jquery', jQuery: 'jquery' ,
+      $: 'jquery', jquery: 'jquery', jQuery: 'jquery',
       "window.Tether": 'tether', "Popper": "popper.js"
     }),
-    new ExtractTextPlugin("stylesheets/styles.css")
+    new MiniCssExtractPlugin("stylesheets/styles.css")
   ],
   externals: {
     jquery: 'jQuery'
   }
-}
+};

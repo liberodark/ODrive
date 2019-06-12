@@ -13,7 +13,7 @@ matrix:
 script:
   - npm run test
   - npm run postinstall
-#  - npm run release-$DIST
+  - npm run release-$DIST
 #deploy:
 #  provider: releases
 #  api_key: $GITHUB_TOKEN

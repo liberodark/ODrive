@@ -12,8 +12,10 @@ matrix:
         env: DIST=mac
 script:
   - npm run test
-  - npm run postinstall
-  - npm run release-$DIST
+  - npm run install
+  - npm run release-linux
+  - npm run release-windows
+  - npm run release-mac
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN

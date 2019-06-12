@@ -55,7 +55,7 @@ class LocalWatcher extends EventEmitter {
     }
 
     this.watcher = chokidar.watch(this.folder, {
-      ignored: /(^|[\/\\])\..*(\.tmp$)/,
+      ignored: /(^|[/\\])\..*(\.tmp$)/,
       persistent: true
     });
 

@@ -13,9 +13,9 @@ node_js:
 script:
   - npm run test
   - npm run postinstall
-  - npm run release-$DIST
-#  - npm run release-windows
-#  - npm run release-mac
+  - npm run release-linux
+  - npm run release-windows
+  - npm run release-mac
 #deploy:
 #  provider: releases
 #  api_key: $GITHUB_TOKEN

@@ -2,20 +2,18 @@ language: node_js
 node_js:
   - "10"
   - "12"
-#matrix:
-#    include:
-#      - os: linux
-#        env: DIST=linux
-#      - os: windows
-#        env: DIST=windows
-#      - os: osx
-#        env: DIST=mac
+matrix:
+    include:
+      - os: linux
+        env: DIST=linux
+      - os: windows
+        env: DIST=windows
+      - os: osx
+        env: DIST=mac
 script:
   - npm run test
   - npm run postinstall
-  - npm run release-linux
-  - sudo apt install -y wine
-  - npm run release-windows
+  - npm run release-$DIST
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN

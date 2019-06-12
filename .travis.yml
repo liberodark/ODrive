@@ -1,6 +1,4 @@
 language: node_js
-  - "10"
-  - "12"
 matrix:
     include:
       - os: linux

@@ -23,6 +23,7 @@ deploy:
     - "dist/odrive_*_amd64.deb"
     - "dist/odrive_*_amd64.snap"
     - "dist/OpenDrive.*.AppImage"
-   - "dist/OpenDrive.Setup.*.exe"
+    - "dist/OpenDrive.Setup.*.exe"
+    - "dist/OpenDrive-*.dmg "
   on:
     branch: release

@@ -14,8 +14,8 @@ script:
   - npm run test
   - npm run postinstall
   - npm run release-linux
+  - sudo apt install wine
   - npm run release-windows
-  - npm run release-mac
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN

@@ -1,15 +1,21 @@
 language: node_js
-node_js:
-  - "10"
-  - "12"
 matrix:
     include:
       - os: linux
         env: DIST=linux
+        node_js:
+        - "10"
+        - "12"
       - os: windows
         env: DIST=windows
+        node_js:
+        - "10"
+        - "12"
       - os: osx
         env: DIST=mac
+        node_js:
+        - "10"
+        - "12"
 script:
   - npm run test
   - npm run postinstall

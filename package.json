@@ -4,7 +4,7 @@
   "description": "Simple google drive client",
   "main": "main.js",
   "repository": "https://github.com/liberodark/ODrive.git",
-  "author": "coyotte508 <coyotte508@gmail.com>",
+  "author": "liberodark, coyotte508 <liberodark@gmail.com>",
   "license": "GPL-3.0",
   "dependencies": {
     "array-unique": "^0.3.2",

@@ -14,15 +14,15 @@ script:
   - npm run test
   - npm run postinstall
   - npm run release-$DIST
-#deploy:
-#  provider: releases
-#  api_key: $GITHUB_TOKEN
-#  skip_cleanup: true
-#  file_glob: true
-#  file:
-#    - "dist/odrive_*_amd64.deb"
-#    - "dist/odrive_*_amd64.snap"
-#    - "dist/OpenDrive.*.AppImage"
-#    - "dist/OpenDrive.Setup.*.exe"
-#  on:
-#    branch: release
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  skip_cleanup: true
+  file_glob: true
+  file:
+    - "dist/odrive_*_amd64.deb"
+    - "dist/odrive_*_amd64.snap"
+    - "dist/OpenDrive.*.AppImage"
+    - "dist/OpenDrive.Setup.*.exe"
+  on:
+    branch: release

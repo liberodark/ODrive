@@ -28,6 +28,7 @@
 [![Travis Status](https://travis-ci.org/liberodark/ODrive.svg?branch=master)](https://travis-ci.org/liberodark/ODrive)
 [![Dependencies Status](https://david-dm.org/liberodark/odrive/status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive)
 [![devDependency Status](https://david-dm.org/liberodark/odrive/dev-status.svg?theme=shields.io)](https://david-dm.org/liberodark/odrive#info=devDependencies)
+[![Code Status](https://www.codefactor.io/repository/github/liberodark/odrive/badge)](https://www.codefactor.io/repository/github/liberodark/odrive)
 
 - Linux (most distros)
 - Arch Linux (https://aur.archlinux.org/packages/odrive-bin/)

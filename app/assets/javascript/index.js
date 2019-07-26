@@ -1,2 +1,2 @@
-// import "../stylesheets/main.scss";
+import "../stylesheets/main.scss";
 import "bootstrap";

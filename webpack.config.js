@@ -29,12 +29,18 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          { loader: MiniCssExtractPlugin.loader },
-          { loader: "style-loader" },
+         { loader: MiniCssExtractPlugin.loader,options: {
+           publicPath: './',
+           reloadAll: true,
+			}, 
+         },
           { loader: "css-loader" },
-          { loader: "resolve-url-loader" },
-          { loader: "sass-loader?sourceMap" },
-        ],
+          { loader: "sass-loader" },
+          { loader: "resolve-url-loader" }, 
+               
+            ]
+        
+        ,
       },
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -68,7 +74,10 @@ module.exports = {
       $: 'jquery', jquery: 'jquery', jQuery: 'jquery',
       "window.Tether": 'tether', "Popper": "popper.js"
     }),
-    new MiniCssExtractPlugin("stylesheets/styles.css")
+    //new MiniCssExtractPlugin("assets/stylesheets/styles.css")
+      new MiniCssExtractPlugin({
+      filename: '/app/assets/stylesheets/styles.css',
+    })
   ],
   externals: {
     jquery: 'jQuery'

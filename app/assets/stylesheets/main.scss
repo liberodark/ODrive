@@ -1,8 +1,9 @@
-@import "~bootstrap/scss/bootstrap";
+$fa-font-path: "~font-awesome/fonts/";
+@import "~bootstrap/dist/css/bootstrap";
 @import "~font-awesome/scss/font-awesome";
-
 @import "helpers";
 @import "components";
+
 
 body {
   padding: 20px;

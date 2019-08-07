@@ -7,10 +7,6 @@
 
 </p>
 <p align="center">
-  <a href="https://www.patreon.com/odrive">
-	<img alt="Patreon" src="https://c5.patreon.com/external/logo/become_a_patron_button.png" height="50" />
-</a>
-
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3XL3UN5WFNW2Y&source=url">
 	<img src="https://avaazimages.s3.amazonaws.com/paypal_donate_button.jpg" height="50"  />
 </a>

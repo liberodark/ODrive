@@ -52,7 +52,7 @@ accounts = <%- JSON.stringify(simplifiedAccounts) %>;
 
   <div>
     <label class="custom-file">
-      <input type="file" class="custom-file-input" id="file" onchange="handleUIChangeFolder(accounts[0])" directory webkitdirectory <% if (accounts.length == 0 || accounts[0].running) {%>disabled<%}%>>
+      <input type="file" id="file" class="custom-file-input" onchange="handleUIChangeFolder(accounts[0])" directory webkitdirectory <% if (accounts.length == 0 || accounts[0].running) {%>disabled<%}%>>
       <span class="custom-file-control folder" id="filePath"><%- (accounts[0]||{folder:"Choose folder..."}).folder %></span>
     </label>
   </div>

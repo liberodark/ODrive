@@ -31,6 +31,8 @@ function handleUIChangeFolder(account) {
   }
 
   let path = files[0].path;
+  // when ever the default folder(path) is changed by user, the latest folder(path) should be updated
+  ipc.send('folder-changed', { accountId: account.id, folder: path });
   $("#filePath").text(path);
   account.folder = path;
 }

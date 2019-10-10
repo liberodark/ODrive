@@ -2,9 +2,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const path = require("path");
-
+const devMode = process.env.NODE_ENV !== 'production';
 module.exports = {
-  mode: 'development',
+  mode : devMode ? 'development' : 'production',
   context: path.resolve(__dirname, 'app/assets'),
   entry: {
     //teambuilder: "./javascript/teambuilder.js",
@@ -18,29 +18,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.(sa|sc|c)ss$/, // /\.scss$/,
         use: [
           { loader: MiniCssExtractPlugin.loader },
-          { loader: "style-loader" },
-          { loader: "css-loader" },
-          { loader: "resolve-url-loader" },
+          // "style-loader" ,
+          { loader: 'css-loader' },
+          { loader: 'resolve-url-loader' } ,
+          { loader: 'sass-loader?sourceMap' }
         ],
-      },
-      {
-        test: /\.scss$/,
-        use: [
-         { loader: MiniCssExtractPlugin.loader,options: {
-           publicPath: './',
-           reloadAll: true,
-			}, 
-         },
-          { loader: "css-loader" },
-          { loader: "sass-loader" },
-          { loader: "resolve-url-loader" }, 
-               
-            ]
-        
-        ,
       },
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -74,10 +59,9 @@ module.exports = {
       $: 'jquery', jquery: 'jquery', jQuery: 'jquery',
       "window.Tether": 'tether', "Popper": "popper.js"
     }),
-    //new MiniCssExtractPlugin("assets/stylesheets/styles.css")
-      new MiniCssExtractPlugin({
-      filename: '/app/assets/stylesheets/styles.css',
-    })
+    new MiniCssExtractPlugin({
+      filename: 'stylesheets/styles.css',
+    }),
   ],
   externals: {
     jquery: 'jQuery'

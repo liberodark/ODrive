@@ -53,7 +53,7 @@ class LocalWatcher extends EventEmitter {
         }
       }
     }
-
+    console.log("The folder is "+this.folder);
     this.watcher = chokidar.watch(this.folder, {
       ignored: /(^|[/\\])\..*(\.tmp$)/,
       persistent: true

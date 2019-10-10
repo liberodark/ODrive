@@ -4,6 +4,7 @@ const router = require("express").Router();
 const gbs = require('../../config/globals');
 const core = require('../core');
 const ipc = require('electron').ipcMain;
+const Sync = require('../core/sync');
 
 const baseSize = os.platform() === "win32" ? 330 : 270;
 
@@ -66,6 +67,26 @@ ipc.on('permanently-delete-setting', async (event, { accountId, permanentlyDelet
     web().send('error', err.message);
   }
 });
+  // Saving folder(path) to object as soon as the default folder(path) is changed by user
+ipc.on('folder-changed', async (event, { accountId, folder}) => {
+  /* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
+  let web = () => {
+    if (gbs.win) {
+      return gbs.win.webContents;
+    } else {
+      return { send: () => { } };
+    }
+  };
+
+  try {
+    let account = await core.getAccountById(accountId);
+    account.folder = folder;
+    await account.save();
+  } catch (err) {
+    console.error(err);
+    web().send('error', err.message);
+  }
+});
 
 ipc.on('start-sync', async (event, {accountId, folder}) => {
   /* Shortcut to web IPC. Does not use 'event.sender' as it can be closed and reopened */
@@ -80,6 +101,9 @@ ipc.on('start-sync', async (event, {accountId, folder}) => {
   try {
     let account = await core.getAccountById(accountId);
     account.folder = folder;
+    // Re-Initialize the local watcher with the new folder(path)
+    account.sync.watcher.initialized = false;
+    account.sync.watcher.init();
     await account.save();
     await account.sync.start(update => web().send("sync-update", {accountId, update}));
     web().send('sync-end');

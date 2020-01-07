@@ -5,7 +5,7 @@ const EventEmitter = require('events');
 
 const Sync = require('./sync');
 const globals = require('../../config/globals');
-const OAuth2 = google.auth.OAuth2;
+const OAuth2 = google.google.auth.OAuth2;
 
 const toSave = ["email", "about", "tokens", "folder", "saveTime", "permanentlyDeleteSetting"];
 
@@ -64,9 +64,9 @@ class Account extends EventEmitter {
         if (err) {
           return reject(err);
         }
-
+        
         this.about = about;
-        this.email = about.user.emailAddress;
+        this.email = about.data.emailAddress;
 
         this.save().then(resolve, reject);
       });
@@ -128,9 +128,10 @@ class Account extends EventEmitter {
 
   onTokensReceived(tokens) {
     this.tokens = tokens;
+    console.log(tokens)
 
     this.oauth.setCredentials(tokens);
-    this.drive = google.drive({
+    this.drive = google.google.drive({
       version: 'v3',
       auth: this.oauth
     });

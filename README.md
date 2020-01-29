@@ -82,7 +82,7 @@ In the project directory:
 npm start
 ```
 
-On Windows, you can make a `.bat` file with `start cmd /k nmp start` that then you can double click to launch the program.
+On Windows, you can make a `.bat` file with `start cmd /k npm start` that then you can double click to launch the program.
 
 The launch-on-startup functionality is only available on bundled releases. See the **Deployment** section.
 

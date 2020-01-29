@@ -72,9 +72,6 @@
         "snap"
       ]
     },
-    "appImage": {
-      "systemIntegration": "doNotAsk"
-    },
     "snap": {
       "grade": "stable",
       "confinement": "classic",

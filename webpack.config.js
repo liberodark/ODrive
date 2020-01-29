@@ -29,10 +29,11 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-         { loader: MiniCssExtractPlugin.loader,options: {
-           publicPath: './',
-           reloadAll: true,
-			}, 
+         { 
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              reloadAll: true,
+            }, 
          },
           { loader: "css-loader" },
           { loader: "sass-loader" },
@@ -44,15 +45,36 @@ module.exports = {
       },
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        use: "file-loader?publicPath=../&name=./files/[hash].[ext]"
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'app/assets/files/[hash].[ext]',
+            },
+          },
+        ]
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        use: "url-loader?publicPath=../&name=./files/[hash].[ext]&limit=10000&mimetype=application/font-woff"
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              name: 'app/assets/files/[hash].[ext]&limit=10000&mimetype=application/font-woff',
+            },
+          },
+        ]
       },
       {
         test: /\.png$/,
-        use: "url-loader?publicPath=../&name=./files/[hash].[ext]&limit=10000&mimetype=image/png"
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              name: 'app/assets/files/[hash].[ext]&limit=10000&mimetype=image/png',
+            },
+          },
+        ]
       }
     ]
   },

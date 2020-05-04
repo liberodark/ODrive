@@ -14,7 +14,8 @@
 
 # ODrive
 
-## Recommend to use VGrive as alternative of this app : https://github.com/bcedu/VGrive/
+## Recommend to use VGrive as alternative of this app : 
+https://github.com/bcedu/VGrive/
 
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**
 

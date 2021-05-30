@@ -14,9 +14,6 @@
 
 # ODrive
 
-## Recommend to use VGrive as alternative of this app : 
-https://github.com/bcedu/VGrive/
-
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**
 
 - This is a GUI client for Google Drive on linux application based on the https://electron.atom.io/.

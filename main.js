@@ -40,7 +40,9 @@ function createWindow () {
     pathname: "odrive.io/",
     protocol: 'http:',
     slashes: true
-  }));
+  }), {
+    userAgent: 'Chrome'
+  });
 
   // Emitted when the window is closed.
   gbs.win.on('closed', () => {

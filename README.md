@@ -1,21 +1,11 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/public/images/logo.png" width="500">    
+    <img src="https://raw.githubusercontent.com/liberodark/Odrive/master/public/images/logo.png" width="500">
 </p>
 <p align="center">
   <b>Sync your files and folders simply</b>
 </p>
 
-</p>
-<p align="center">
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3XL3UN5WFNW2Y&source=url">
-	<img src="https://avaazimages.s3.amazonaws.com/paypal_donate_button.jpg" height="50"  />
-</a>
-</p>
-
 # ODrive
-
-## Recommend to use VGrive as alternative of this app : 
-https://github.com/bcedu/VGrive/
 
 **Clone and run for a quick way to see ODrive (OpenSource Drive) in action.**
 
@@ -38,7 +28,7 @@ https://github.com/bcedu/VGrive/
 
 ## To Use
 
-To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. 
+To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer.
 
 The first thing you need is the source code, in your command line:
 
@@ -48,7 +38,7 @@ git clone https://github.com/liberodark/ODrive
 ```
 This will download all the source code in a "ODrive" folder in the current directory. Alternatively, you can download and extract the zip from github's interface.
 
-The steps below (Setup, Build, Run) are to execute in order to ready everything. 
+The steps below (Setup, Build, Run) are to execute in order to ready everything.
 
 ## Setup
 
@@ -71,7 +61,7 @@ In the project directory:
 npm install
 ```
 
-Note: If you're using Ubuntu and you get an error message about a missing node binary, you may want to try [this](https://stackoverflow.com/questions/18130164/nodejs-vs-node-on-ubuntu-12-04): 
+Note: If you're using Ubuntu and you get an error message about a missing node binary, you may want to try [this](https://stackoverflow.com/questions/18130164/nodejs-vs-node-on-ubuntu-12-04):
 
 ```sudo ln -s `which nodejs` /usr/bin/node```
 

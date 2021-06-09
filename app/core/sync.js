@@ -1068,7 +1068,8 @@ class Sync extends EventEmitter {
   }
 
   async finishSaveOperation() {
-    while (this.loading || this.saving) {
+//    while (this.loading || this.saving) {
+    while (this.saving) {
       await delay(20);
     }
   }
@@ -1167,7 +1168,8 @@ class Sync extends EventEmitter {
     verbose("Saving sync object");
     await this.finishLoading();
 
-    if (this.loading || this.saving) {
+//    if (this.loading || this.saving) {
+    if (this.saving) {
       return await this.finishSaveOperation();
     }
     this.saving = true;

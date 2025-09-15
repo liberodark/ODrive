@@ -10,7 +10,7 @@
     "array-unique": "^0.3.2",
     "auto-launch": "^5.0.5",
     "body-parser": "^1.19.0",
-    "bootstrap": "4.4.1",
+    "bootstrap": "5.0.0",
     "chokidar": "^3.3.1",
     "command-line-args": "^5.1.1",
     "deep-equal": "^2.0.1",

@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.1.1",
-    "css-loader": "^3.4.1",
+    "css-loader": "^7.1.2",
     "electron": "^8.0.1",
     "electron-builder": "^22.3.3",
     "electron-packager": "^14.1.1",

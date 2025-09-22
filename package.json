@@ -16,7 +16,7 @@
     "deep-equal": "^2.0.1",
     "delay": "^6.0.0",
     "ejs": "^3.0.1",
-    "express": "^4.17.1",
+    "express": "^5.1.0",
     "file-loader": "^5.0.2",
     "font-awesome": "^4.7.0",
     "fs-extra": "^8.1.0",

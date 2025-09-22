@@ -22,7 +22,7 @@
     "fs-extra": "^8.1.0",
     "googleapis": "^160.0.0",
     "jquery": "^3.4.1",
-    "md5-file": "^4.0.0",
+    "md5-file": "^5.0.0",
     "mkdirp-promise": "^5.0.1",
     "morgan": "^1.9.1",
     "nedb-promise": "^2.0.1",

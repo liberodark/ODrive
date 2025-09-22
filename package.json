@@ -36,7 +36,7 @@
     "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^3.4.1",
     "electron": "^8.0.1",
-    "electron-builder": "^22.3.3",
+    "electron-builder": "^26.0.12",
     "electron-packager": "^14.1.1",
     "eslint": "^6.8.0",
     "mini-css-extract-plugin": "^2.9.4",

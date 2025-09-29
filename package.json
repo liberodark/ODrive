@@ -19,7 +19,7 @@
     "express": "^5.1.0",
     "file-loader": "^5.0.2",
     "font-awesome": "^4.7.0",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^11.3.2",
     "googleapis": "^160.0.0",
     "jquery": "^3.4.1",
     "md5-file": "^5.0.0",

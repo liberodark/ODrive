@@ -12,7 +12,7 @@
     "body-parser": "^1.19.0",
     "bootstrap": "5.3.8",
     "chokidar": "^3.3.1",
-    "command-line-args": "^5.1.1",
+    "command-line-args": "^6.0.1",
     "deep-equal": "^2.0.1",
     "delay": "^6.0.0",
     "ejs": "^3.0.1",

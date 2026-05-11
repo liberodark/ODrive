@@ -29,7 +29,7 @@
     "node-notifier": "^10.0.1",
     "node-sass": "^4.13.0",
     "popper.js": "^1.16.0",
-    "sass-loader": "^8.0.0",
+    "sass-loader": "^16.0.6",
     "tether": "^1.4.7"
   },
   "devDependencies": {

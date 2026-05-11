@@ -9,7 +9,7 @@
   "dependencies": {
     "array-unique": "^0.3.2",
     "auto-launch": "^5.0.5",
-    "body-parser": "^1.19.0",
+    "body-parser": "^2.2.0",
     "bootstrap": "5.3.8",
     "chokidar": "^4.0.3",
     "command-line-args": "^5.1.1",
